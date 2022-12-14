@@ -81,6 +81,16 @@ extension Data {
         }
         selectedPhotos.removeAll(where: { $0 == photo })
     }
+    
+    /// 移除已选的照片，用于调用方操作删除等场景
+    public func remove(selectedPhoto: Photo) {
+        guard photos.contains(selectedPhoto) else {
+            debugPrint("***** 照片未添加 *****")
+            return
+        }
+        photos.removeAll(where: { $0 == selectedPhoto })
+        restoreStatus()
+    }
 }
 
 extension Data {
