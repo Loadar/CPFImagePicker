@@ -1,0 +1,147 @@
+//
+//  PhotoCell.swift
+//  
+//
+//  Created by Aaron on 2022/12/8.
+//
+
+import UIKit
+import Then
+
+open class PhotoCell: UICollectionViewCell, AnyCPFPhotoCell {
+    /// 缩略图
+    public let thumbnailView = UIImageView()
+    /// 选中状态
+    public let selectStatusView = UIButton(type: .custom)
+    /// 无法选中蒙层
+    public let imselectableMaskView = UIView()
+    
+    /// 选中状态控件宽度
+    private var selectStatusViewWidthConstraint: NSLayoutConstraint?
+    /// 选中状态控件高度
+    private var selectStatusViewHeightConstraint: NSLayoutConstraint?
+
+    /// 展示的照片
+    private var displayPhoto: Photo?
+    
+    // MARK: - Lifecycle
+    public override init(frame: CGRect) {
+        super.init(frame: .zero)
+        configureCell()
+    }
+    
+    required public init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+ 
+    // MARK: - UI
+    public func configureCell() {
+        // views
+        contentView.do {
+            $0.addSubview(thumbnailView)
+            $0.addSubview(selectStatusView)
+            $0.addSubview(imselectableMaskView)
+        }
+        
+        // layouts
+        thumbnailView.translatesAutoresizingMaskIntoConstraints = false
+        selectStatusView.translatesAutoresizingMaskIntoConstraints = false
+        imselectableMaskView.translatesAutoresizingMaskIntoConstraints = false
+        
+        thumbnailView.do {
+            let constraints: [NSLayoutConstraint] = [
+                $0.topAnchor.constraint(equalTo: contentView.topAnchor),
+                $0.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+                $0.leftAnchor.constraint(equalTo: contentView.leftAnchor),
+                $0.rightAnchor.constraint(equalTo: contentView.rightAnchor)
+            ]
+            contentView.addConstraints(constraints)
+        }
+        selectStatusView.do {
+            let widthConstraint = $0.widthAnchor.constraint(equalToConstant: 24)
+            self.selectStatusViewWidthConstraint = widthConstraint
+            let heightConstraint = $0.heightAnchor.constraint(equalToConstant: 24)
+            self.selectStatusViewHeightConstraint = heightConstraint
+            let constraints: [NSLayoutConstraint] = [
+                $0.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5),
+                $0.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -5),
+                widthConstraint,
+                heightConstraint
+            ]
+            contentView.addConstraints(constraints)
+        }
+        imselectableMaskView.do {
+            let constraints: [NSLayoutConstraint] = [
+                $0.topAnchor.constraint(equalTo: contentView.topAnchor),
+                $0.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+                $0.leftAnchor.constraint(equalTo: contentView.leftAnchor),
+                $0.rightAnchor.constraint(equalTo: contentView.rightAnchor)
+            ]
+            contentView.addConstraints(constraints)
+        }
+        
+        // attributes
+        thumbnailView.do {
+            $0.contentMode = .scaleAspectFill
+            $0.clipsToBounds = true
+        }
+        selectStatusView.do {
+            $0.isUserInteractionEnabled = false
+            $0.imageView?.contentMode = .scaleAspectFit
+        }
+        imselectableMaskView.do {
+            $0.isUserInteractionEnabled = false
+            $0.backgroundColor = .white.withAlphaComponent(0.4)
+            $0.isHidden = true
+        }
+    }
+    
+    // MARK: - AnyCPFPhotoCell
+    public func updateData(_ photo: Photo, isSelected: Bool, selectable: Bool) {
+        self.displayPhoto = photo
+
+        selectStatusView.isSelected = isSelected
+        imselectableMaskView.isHidden = isSelected || selectable
+        
+        self.layoutIfNeeded()
+        ImageManager.shared.fetchThumbnail(of: photo.asset, width: thumbnailView.bounds.width, keepImageSizeRatio: false) { [weak self] image, assert in
+            guard let self = self else { return }
+            guard assert.localIdentifier == self.displayPhoto?.asset.localIdentifier else { return }
+            self.thumbnailView.image = image
+        }
+    }
+    
+    public func update(selectedState: Bool) {
+        selectStatusView.isSelected = selectedState
+    }
+    
+    public func update(config: Config.Photo.Cell) {
+        if let radius = config.thumbnailCornerRadius, radius > 0 {
+            thumbnailView.layer.cornerRadius = radius
+        } else {
+            thumbnailView.layer.cornerRadius = 0
+        }
+        if let (lineWidth, color) = config.thumbnailBorder, lineWidth > 0 {
+            thumbnailView.layer.borderWidth = lineWidth
+            thumbnailView.layer.borderColor = color.cgColor
+        } else {
+            thumbnailView.layer.borderWidth = 0
+        }
+        
+        if let constraint = selectStatusViewWidthConstraint, constraint.constant != config.selectStateIconSize.width {
+            constraint.constant = config.selectStateIconSize.width
+        }
+        if let constraint = selectStatusViewHeightConstraint, constraint.constant != config.selectStateIconSize.height {
+            constraint.constant = config.selectStateIconSize.height
+        }
+
+        if let icon = config.unSelectedIcon, icon !== selectStatusView.image(for: .normal) {
+            selectStatusView.setImage(icon, for: .normal)
+        }
+        if let icon = config.selectedIcon, icon !== selectStatusView.image(for: .selected) {
+            selectStatusView.setImage(icon, for: .selected)
+        }
+
+        imselectableMaskView.backgroundColor = config.maskColor
+    }
+}
