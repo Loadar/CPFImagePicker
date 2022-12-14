@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		931E4A162948182B00527821 /* LookinServer in Frameworks */ = {isa = PBXBuildFile; productRef = 931E4A152948182B00527821 /* LookinServer */; };
+		93535A7B2949D41900690845 /* CPFImagePicker in Frameworks */ = {isa = PBXBuildFile; productRef = 93535A7A2949D41900690845 /* CPFImagePicker */; };
 		935440C12940A0C1003FE091 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935440C02940A0C1003FE091 /* AppDelegate.swift */; };
 		935440C52940A0C1003FE091 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935440C42940A0C1003FE091 /* ViewController.swift */; };
 		935440C82940A0C1003FE091 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 935440C62940A0C1003FE091 /* Main.storyboard */; };
@@ -16,7 +17,6 @@
 		935440D82940A0C4003FE091 /* CPFImagePickerDemoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935440D72940A0C4003FE091 /* CPFImagePickerDemoTests.swift */; };
 		935440E22940A0C4003FE091 /* CPFImagePickerDemoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935440E12940A0C4003FE091 /* CPFImagePickerDemoUITests.swift */; };
 		935440E42940A0C4003FE091 /* CPFImagePickerDemoUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935440E32940A0C4003FE091 /* CPFImagePickerDemoUITestsLaunchTests.swift */; };
-		935440F62940A3BE003FE091 /* CPFImagePicker in Frameworks */ = {isa = PBXBuildFile; productRef = 935440F52940A3BE003FE091 /* CPFImagePicker */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,6 +39,7 @@
 /* Begin PBXFileReference section */
 		931E4A1729487E3600527821 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
 		931E4A1829487E3600527821 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
+		931E4A1A2949D04000527821 /* CPFImagePicker */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = CPFImagePicker; path = ..; sourceTree = "<group>"; };
 		935440BD2940A0C1003FE091 /* CPFImagePickerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CPFImagePickerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		935440C02940A0C1003FE091 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		935440C42940A0C1003FE091 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -51,7 +52,6 @@
 		935440DD2940A0C4003FE091 /* CPFImagePickerDemoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CPFImagePickerDemoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		935440E12940A0C4003FE091 /* CPFImagePickerDemoUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPFImagePickerDemoUITests.swift; sourceTree = "<group>"; };
 		935440E32940A0C4003FE091 /* CPFImagePickerDemoUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CPFImagePickerDemoUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		935440F32940A38F003FE091 /* CPFImagePicker */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = CPFImagePicker; path = ../CPFImagePicker; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,7 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				935440F62940A3BE003FE091 /* CPFImagePicker in Frameworks */,
+				93535A7B2949D41900690845 /* CPFImagePicker in Frameworks */,
 				931E4A162948182B00527821 /* LookinServer in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -81,10 +81,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		931E4A192949D04000527821 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				931E4A1A2949D04000527821 /* CPFImagePicker */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
 		935440B42940A0C1003FE091 = {
 			isa = PBXGroup;
 			children = (
-				935440F02940A0D4003FE091 /* Packages */,
+				931E4A192949D04000527821 /* Packages */,
 				935440BF2940A0C1003FE091 /* CPFImagePickerDemo */,
 				935440D62940A0C4003FE091 /* CPFImagePickerDemoTests */,
 				935440E02940A0C4003FE091 /* CPFImagePickerDemoUITests */,
@@ -133,14 +141,6 @@
 			path = CPFImagePickerDemoUITests;
 			sourceTree = "<group>";
 		};
-		935440F02940A0D4003FE091 /* Packages */ = {
-			isa = PBXGroup;
-			children = (
-				935440F32940A38F003FE091 /* CPFImagePicker */,
-			);
-			name = Packages;
-			sourceTree = "<group>";
-		};
 		935440F42940A3BE003FE091 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -165,8 +165,8 @@
 			);
 			name = CPFImagePickerDemo;
 			packageProductDependencies = (
-				935440F52940A3BE003FE091 /* CPFImagePicker */,
 				931E4A152948182B00527821 /* LookinServer */,
+				93535A7A2949D41900690845 /* CPFImagePicker */,
 			);
 			productName = CPFImagePickerDemo;
 			productReference = 935440BD2940A0C1003FE091 /* CPFImagePickerDemo.app */;
@@ -650,7 +650,7 @@
 			package = 931E4A142948182B00527821 /* XCRemoteSwiftPackageReference "LookinServer" */;
 			productName = LookinServer;
 		};
-		935440F52940A3BE003FE091 /* CPFImagePicker */ = {
+		93535A7A2949D41900690845 /* CPFImagePicker */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = CPFImagePicker;
 		};
