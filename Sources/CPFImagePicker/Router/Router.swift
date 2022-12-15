@@ -20,7 +20,7 @@ public struct Router {
         var config = Config()
         configure(&config)
         if let navigationController = navigationController {
-            config.displaySystemNavigationBar = !navigationController.isNavigationBarHidden
+            config.appearance.displaySystemNavigationBar = !navigationController.isNavigationBarHidden
         }
         
         let data = DataManager.shared.newData(of: config)
@@ -67,7 +67,7 @@ public struct Router {
                         $0.titleTextAttributes = [.font: UIFont.boldSystemFont(ofSize: 18), .foregroundColor: UIColor.black]
                     }
                     navigationController.modalPresentationStyle = .fullScreen
-                    navigationController.isNavigationBarHidden = !data.config.displaySystemNavigationBar
+                    navigationController.isNavigationBarHidden = !data.config.appearance.displaySystemNavigationBar
                  
                     CPFUIKit.Util.topController?.present(navigationController, animated: true)
                 }

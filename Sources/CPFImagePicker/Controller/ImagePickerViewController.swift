@@ -59,7 +59,7 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
         view.do {
             $0.addSubview(contentView)
             
-            if data.config.displaySystemNavigationBar {
+            if data.config.appearance.displaySystemNavigationBar {
                 navigationItem.leftBarButtonItem = UIBarButtonItem(customView: navigationView.backButton)
                 navigationItem.titleView = navigationView.titleButton
                 navigationItem.rightBarButtonItem = UIBarButtonItem(customView: navigationView.nextButton)
@@ -79,7 +79,7 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
                 $0.leftAnchor.constraint(equalTo: view.leftAnchor),
                 $0.rightAnchor.constraint(equalTo: view.rightAnchor)
             ]
-            if data.config.displaySystemNavigationBar {
+            if data.config.appearance.displaySystemNavigationBar {
                 constraints.append($0.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor))
             } else {
                 constraints.append($0.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor))
@@ -108,9 +108,9 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
         // attributes
         navigationView.do {
             $0.backgroundColor = .white
-            $0.isHidden = data.config.displaySystemNavigationBar
+            $0.isHidden = data.config.appearance.displaySystemNavigationBar
         }
-        if !data.config.displaySystemNavigationBar {
+        if !data.config.appearance.displaySystemNavigationBar {
             let backgroundView = UIView()
             view.insertSubview(backgroundView, belowSubview: navigationView)
             backgroundView.translatesAutoresizingMaskIntoConstraints = false
@@ -173,7 +173,7 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
             if !self.navigationView.titleButton.isSelected {
                 self.navigationView.titleButton.isSelected.toggle()
                 self.navigationView.updateNextButton(with: self.data.selectedPhotos.count, enabled: false)
-                UIView.animate(withDuration: self.data.config.albumList.animationTimeInterval, delay: 0, options: .curveEaseOut, animations: {
+                UIView.animate(withDuration: self.data.config.album.animationTimeInterval, delay: 0, options: .curveEaseOut, animations: {
                     if self.navigationView.titleButton.isSelected {
                         self.navigationView.titleButton.imageView?.transform = CGAffineTransform(rotationAngle: .pi)
                     } else {
@@ -188,7 +188,7 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
                         guard let self = self else { return }
                         self.navigationView.titleButton.isSelected.toggle()
                         self.navigationView.updateNextButton(with: self.data.selectedPhotos.count, enabled: true)
-                        UIView.animate(withDuration: self.data.config.albumList.animationTimeInterval, delay: 0, options: .curveEaseOut, animations: {
+                        UIView.animate(withDuration: self.data.config.album.animationTimeInterval, delay: 0, options: .curveEaseOut, animations: {
                             if self.navigationView.titleButton.isSelected {
                                 self.navigationView.titleButton.imageView?.transform = CGAffineTransform(rotationAngle: .pi)
                             } else {

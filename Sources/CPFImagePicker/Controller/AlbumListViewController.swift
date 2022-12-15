@@ -23,14 +23,14 @@ open class AlbumListViewController<Cell: UITableViewCell & AnyCPFAlbumCell>: UIV
     
     /// 内容高度
     private var contentHeight: CGFloat {
-        let config = self.config.albumList
+        let config = self.config.album
         let count = DataManager.shared.albums.count
-        var height = config.cellHeight * CGFloat(count)
-        height += config.contentInset.top
-        height += config.contentInset.bottom
+        var height = config.cell.rowHeight * CGFloat(count)
+        height += config.list.contentInset.top
+        height += config.list.contentInset.bottom
         
-        if height > config.maxContentHeight {
-            height = config.maxContentHeight
+        if height > config.list.maxContentHeight {
+            height = config.list.maxContentHeight
         }
         return height
     }
@@ -92,7 +92,7 @@ open class AlbumListViewController<Cell: UITableViewCell & AnyCPFAlbumCell>: UIV
 
         // attributes
         backgroundView.do {
-            $0.backgroundColor = config.albumList.backgroundColor
+            $0.backgroundColor = config.album.list.backgroundColor
             $0.addTarget(self, action: #selector(backgroundTapped), for: .touchUpInside)
         }
         tableView.do {
@@ -100,8 +100,8 @@ open class AlbumListViewController<Cell: UITableViewCell & AnyCPFAlbumCell>: UIV
             $0.backgroundColor = .white
             $0.tableFooterView = UIView()
             $0.separatorStyle = .none
-            $0.contentInset = config.albumList.contentInset
-            $0.contentOffset.y = config.albumList.contentInset.top * -1
+            $0.contentInset = config.album.list.contentInset
+            $0.contentOffset.y = config.album.list.contentInset.top * -1
             
             $0.register(Cell.self, forCellReuseIdentifier: String(describing: Cell.self))
             $0.dataSource = self
@@ -140,7 +140,7 @@ open class AlbumListViewController<Cell: UITableViewCell & AnyCPFAlbumCell>: UIV
     }
     
     public func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        config.albumList.cellHeight
+        config.album.cell.rowHeight
     }
     
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -199,7 +199,7 @@ open class AlbumListViewController<Cell: UITableViewCell & AnyCPFAlbumCell>: UIV
         backgroundView.alpha = 0
         tableView.transform = CGAffineTransform(translationX: 0, y: contentHeight * -1)
         UIView.animate(
-            withDuration: config.albumList.animationTimeInterval,
+            withDuration: config.album.animationTimeInterval,
             delay: 0,
             options: .curveEaseOut,
             animations: { [weak self] in
@@ -216,7 +216,7 @@ open class AlbumListViewController<Cell: UITableViewCell & AnyCPFAlbumCell>: UIV
     public func dismiss(with album: Album?) {
         completion(album)
         UIView.animate(
-            withDuration: config.albumList.animationTimeInterval,
+            withDuration: config.album.animationTimeInterval,
             delay: 0,
             options: .curveEaseOut,
             animations: { [weak self] in

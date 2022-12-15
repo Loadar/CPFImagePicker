@@ -34,7 +34,7 @@ open class NavigationView: UIView {
     public init(config: Config) {
         self.config = config
         backButton = CPFButton {
-            let iconSize = config.backIconSize
+            let iconSize = config.appearance.backIconSize
             if iconSize.width <= CPF.backButtonSize.width, iconSize.height <= CPF.backButtonSize.height {
                 $0.imageSize = iconSize
                 let xInset = CPF.backButtonSize.width - iconSize.width
@@ -47,7 +47,7 @@ open class NavigationView: UIView {
         titleButton = CPFButton {
             $0.priority = .text
             $0.interSpace = 0
-            $0.imageSize = config.popUpIconSize
+            $0.imageSize = config.appearance.popUpIconSize
             // 234 = 约为 16*2(两边按钮边距)+91*2(下一步按钮，2位数字时)+10*2(内容间距)
             $0.textMaxWidth = UIScreen.main.bounds.width - 234 - $0.imageSize.width - $0.interSpace
             
@@ -109,14 +109,14 @@ open class NavigationView: UIView {
         // attributes
         backButton.do {
             $0.imageView?.contentMode = .scaleAspectFit
-            $0.setImage(config.backIcon, for: .normal)
+            $0.setImage(config.appearance.backIcon, for: .normal)
         }
         titleButton.do {
             $0.titleLabel?.font = .systemFont(ofSize: 18)
             $0.setTitleColor(.black, for: .normal)
             
             $0.imageView?.contentMode = .scaleAspectFit
-            $0.setImage(config.popUpIcon, for: .normal)
+            $0.setImage(config.appearance.popUpIcon, for: .normal)
         }
         nextButton.do {
             $0.isEnabled = false

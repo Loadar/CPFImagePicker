@@ -102,7 +102,7 @@ class ViewController: UIViewController {
                         }
                     },
                     configure: { [weak self] in
-                        $0.displaySystemNavigationBar = true
+                        $0.appearance.displaySystemNavigationBar = true
                         $0.photo.maxSelectableCount = 5
                         $0.photo.photoShouldSelect = { [weak self] in
                             guard let self = self else { return false }
@@ -162,7 +162,7 @@ class ViewController: UIViewController {
                         }
                     },
                     configure: {
-                        $0.displaySystemNavigationBar = false
+                        $0.appearance.displaySystemNavigationBar = false
                         $0.photo.maxSelectableCount = 3
                     },
                     completion: { _ in
@@ -200,7 +200,7 @@ class ViewController: UIViewController {
                     }
                 },
                 configure: { config in
-                    config.displaySystemNavigationBar = true
+                    config.appearance.displaySystemNavigationBar = true
                 },
                 completion: { _ in
                     
@@ -218,7 +218,7 @@ class ViewController: UIViewController {
                     }
                 },
                 configure: { config in
-                    config.displaySystemNavigationBar = false
+                    config.appearance.displaySystemNavigationBar = false
                 },
                 completion: { _ in
                     
