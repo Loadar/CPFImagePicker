@@ -281,15 +281,16 @@ extension Util {
 extension Util {
     /// 获取照片原始数据
     /// - Parameters:
-    ///   - asset: 照片对应的asset
+    ///   - photo: 当前照片
     ///   - synchronous: 是否是同步获取
     ///   - completion: 完成回调
     /// - Returns: 获取Id，用于取消请求
     public static func originalPhotoData(
-        of asset: PHAsset,
+        of photo: Photo,
         synchronous: Bool,
-        completion: @escaping (_ data: Foundation.Data, _ info: [AnyHashable: Any], _ orientation: UIImage.Orientation) -> Void
+        completion: @escaping ((data: Foundation.Data, info: [AnyHashable: Any], orientation: UIImage.Orientation)?) -> Void
     ) -> PHImageRequestID {
+        let asset = photo.asset
         let option = PHImageRequestOptions().then {
             $0.resizeMode = .none
             $0.isSynchronous = synchronous
@@ -298,17 +299,25 @@ extension Util {
         }
         if #available(iOS 13, *) {
             return PHImageManager.default().requestImageDataAndOrientation(for: asset, options: option, resultHandler: { data, _, orientation, info in
-                guard let info = info else { return }
+                guard let info = info else {
+                    completion(nil)
+                    return
+                }
                 if let status = info[PHImageCancelledKey] as? Bool, status {
                     // 取消了
                     // ?? 取消了还会有回调？
+                    completion(nil)
                     return
                 }
                 if let status = info[PHImageErrorKey] as? Bool, status {
                     // 出错了
+                    completion(nil)
                     return
                 }
-                guard let data = data else { return }
+                guard let data = data else {
+                    completion(nil)
+                    return
+                }
                 let finalOrientation: UIImage.Orientation = {
                     switch orientation {
                     case .up: return .up
@@ -321,22 +330,30 @@ extension Util {
                     case .rightMirrored: return .rightMirrored
                     }
                 }()
-                completion(data, info, finalOrientation)
+                completion((data, info, finalOrientation))
             })
         } else {
             return PHImageManager.default().requestImageData(for: asset, options: option, resultHandler: { data, _, orientation, info in
-                guard let info = info else { return }
+                guard let info = info else {
+                    completion(nil)
+                    return
+                }
                 if let status = info[PHImageCancelledKey] as? Bool, status {
                     // 取消了
                     // ?? 取消了还会有回调？
+                    completion(nil)
                     return
                 }
                 if let status = info[PHImageErrorKey] as? Bool, status {
                     // 出错了
+                    completion(nil)
                     return
                 }
-                guard let data = data else { return }
-                completion(data, info, orientation)
+                guard let data = data else {
+                    completion(nil)
+                    return
+                }
+                completion((data, info, orientation))
             })
         }
     }
