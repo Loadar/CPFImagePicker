@@ -11,6 +11,7 @@ extension Config {
     /// 全局样式
     public struct Appearance {
         /// 是否使用系统导航栏，指定为false时导航栏部分将使用自定view来实现，默认false(使用modal方式展示时才生效)
+        /// 注意：展示的导航模式为push是，此项值会根据情况自动调整
         public var displaySystemNavigationBar = false
         
         /// 返回图标

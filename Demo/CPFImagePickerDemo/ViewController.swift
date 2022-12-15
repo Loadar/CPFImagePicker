@@ -91,7 +91,6 @@ class ViewController: UIViewController {
             
             if let data = self.data {
                 CPFImagePicker.Router.showImagePicker(
-                    to: self.navigationController,
                     with: data,
                     authorizing: { status in
                         switch status {
@@ -119,7 +118,7 @@ class ViewController: UIViewController {
                                 return true
                             }
                         }
-                        $0.photo.tryToSelectPhotoBeyondMaxCount = { [weak self] in
+                        $0.photo.tryToSelectPhotoBeyondMaxCount = { [weak self] _ in
                             let controller = UIAlertController(title: "已达到最大可选择图片数目", message: nil, preferredStyle: .alert).then {
                                 $0.addAction(UIAlertAction(title: "知道了", style: .cancel))
                             }
@@ -132,7 +131,6 @@ class ViewController: UIViewController {
                 )
             } else {
                 CPFImagePicker.Router.showImagePicker(
-                    to: self.navigationController,
                     authorizing: { status in
                         switch status {
                         case .authorized, .limited:
@@ -148,6 +146,7 @@ class ViewController: UIViewController {
                     },
                     completion: { [weak self] data in
                         guard let self = self else { return }
+                        guard let data = data else { return }
                         if self.data !== data {
                             self.data = data
                         }
@@ -167,7 +166,6 @@ class ViewController: UIViewController {
             navigationController?.isNavigationBarHidden = true
             if let data = self.data {
                 CPFImagePicker.Router.showImagePicker(
-                    to: self.navigationController,
                     with: data,
                     authorizing: { status in
                         switch status {
@@ -187,7 +185,6 @@ class ViewController: UIViewController {
                 )
             } else {
                 CPFImagePicker.Router.showImagePicker(
-                    to: self.navigationController,
                     authorizing: { status in
                         switch status {
                         case .authorized, .limited:
@@ -200,13 +197,13 @@ class ViewController: UIViewController {
                         //config.displaySystemNavigationBar = false
                     },
                     completion: { [weak self] data in
+                        guard let data = data else { return }
                         self?.data = data
                     }
                 )
             }
         } else if button === presentButton {
             let _ = CPFImagePicker.Router.showImagePicker(
-                to: nil,
                 authorizing: { status in
                     switch status {
                     case .authorized, .limited:
@@ -217,6 +214,7 @@ class ViewController: UIViewController {
                 },
                 configure: { config in
                     config.appearance.displaySystemNavigationBar = true
+                    config.preferNavigateMode = .modal
                 },
                 completion: { _ in
                     
@@ -224,7 +222,6 @@ class ViewController: UIViewController {
             )
         } else if button === presentButtonWithCustomNavigationBar {
             let _ = CPFImagePicker.Router.showImagePicker(
-                to: nil,
                 authorizing: { status in
                     switch status {
                     case .authorized, .limited:
@@ -235,6 +232,7 @@ class ViewController: UIViewController {
                 },
                 configure: { config in
                     config.appearance.displaySystemNavigationBar = false
+                    config.preferNavigateMode = .modal
                 },
                 completion: { _ in
                     

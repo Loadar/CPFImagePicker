@@ -117,7 +117,7 @@ open class PhotoListViewController<Cell: UICollectionViewCell & AnyCPFPhotoCell>
                     return
                 }
                 if data.selectedPhotos.count >= data.config.photo.maxSelectableCount {
-                    data.config.photo.tryToSelectPhotoBeyondMaxCount?()
+                    data.config.photo.tryToSelectPhotoBeyondMaxCount?(data.config)
                 } else {
                     data.add(photo: photo)
                 }

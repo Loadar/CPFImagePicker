@@ -15,7 +15,7 @@ extension Config {
         /// 指定照片是否可选择，未指定时仅受到最大选择数目限制，默认为nil
         public var photoShouldSelect: ((CPFImagePicker.Photo) -> Bool)?
         /// 尝试选取超出限制数目的照片
-        public var tryToSelectPhotoBeyondMaxCount: (() -> Void)?
+        public var tryToSelectPhotoBeyondMaxCount: ((Config) -> Void)?
         
         /// 列表
         public var list = List()
