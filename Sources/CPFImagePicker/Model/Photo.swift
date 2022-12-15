@@ -15,6 +15,13 @@ public struct Photo {
     /// 类型
     public let type: PhotoType
     
+    /// 缩略图
+    public var thumbanil: UIImage? {
+        let defaultConfig = Config()
+        let width = defaultConfig.photo.list.layoutProvider().itemSize.width
+        return ImageManager.shared.thumbnail(of: self, width: width)
+    }
+    
     /// 通过asset及照片类型初始化
     public init(asset: PHAsset, type: PhotoType) {
         self.asset = asset

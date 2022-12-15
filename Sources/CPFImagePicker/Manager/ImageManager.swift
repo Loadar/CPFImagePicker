@@ -31,7 +31,7 @@ extension ImageManager {
     ///   - keepImageSizeRatio: 是否保持图像宽高比
     ///   - responseOnceForSameRequest: 同样的图像请求，是否仅响应最后一次的回调，默认true
     ///   - completion: 完成回调
-    public func fetchThumbnail(
+    func fetchThumbnail(
         of asset: PHAsset,
         width: CGFloat,
         keepImageSizeRatio: Bool,
@@ -75,5 +75,13 @@ extension ImageManager {
             }
         })
         self.imageRequestInfo[key] = id
+    }
+}
+
+extension ImageManager {
+    /// 指定照片的缩略图，仅从缓存中获取
+    public func thumbnail(of photo: Photo, width: CGFloat) -> UIImage? {
+        let key = "\(photo.asset.localIdentifier)-\(width)-\(false)"
+        return thumbnailCache.object(forKey: key as NSString)
     }
 }
