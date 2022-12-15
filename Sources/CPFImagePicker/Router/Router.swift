@@ -14,7 +14,7 @@ public struct Router {
         to navigationController: UINavigationController?,
         authorizing: @escaping (PHAuthorizationStatus) -> Void,
         configure: (inout Config) -> Void,
-        completion: @escaping (Data) -> Void
+        completion: @escaping (Data?) -> Void
     ) {
         var config = Config()
         configure(&config)
@@ -38,7 +38,7 @@ public struct Router {
         with data: Data,
         authorizing: @escaping (PHAuthorizationStatus) -> Void,
         configure: ((inout Config) -> Void)? = nil,
-        completion: @escaping (Data) -> Void
+        completion: @escaping (Data?) -> Void
     ) {
         
         Util.requestAlbumAuthorization { status in
