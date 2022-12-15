@@ -125,7 +125,7 @@ class ViewController: UIViewController {
                             self?.present(controller, animated: true)
                         }
                     },
-                    completion: { _ in
+                    completion: { _, _ in
                         
                     }
                 )
@@ -141,24 +141,39 @@ class ViewController: UIViewController {
                     },
                     configure: { config in
                         config.dismissWhenCompleted = false
-                        
+                        config.preferNavigateMode = .modal
+
                         //config.displaySystemNavigationBar = true
                     },
-                    completion: { [weak self] data in
+                    completion: { [weak self] data, picker in
                         guard let self = self else { return }
                         guard let data = data else { return }
                         if self.data !== data {
                             self.data = data
                         }
                         
-                        guard let navigationController = self.navigationController else { return }
-                        let testController = UIViewController().then {
-                            $0.view.backgroundColor = .green
+                        func showDetail() {
+                            let testController = UIViewController().then {
+                                $0.view.backgroundColor = .green
+                            }
+                            if let navigationController = picker?.navigationController, case .push = data.config.displayNavigateMode {
+                                var controllers = navigationController.viewControllers
+                                controllers.removeLast()
+                                controllers.append(testController)
+                                navigationController.setViewControllers(controllers, animated: true)
+                            } else {
+                                self.present(testController, animated: true)
+                            }
                         }
-                        var controllers = navigationController.viewControllers
-                        controllers.removeLast()
-                        controllers.append(testController)
-                        navigationController.setViewControllers(controllers, animated: true)
+                        
+                        if !data.config.dismissWhenCompleted {
+                            picker?.dismissPicker(animated: true, completion: {
+                                showDetail()
+                            })
+                        } else {
+                            showDetail()
+                        }
+                        
                     }
                 )
             }
@@ -179,7 +194,7 @@ class ViewController: UIViewController {
                         $0.appearance.displaySystemNavigationBar = false
                         $0.photo.maxSelectableCount = 3
                     },
-                    completion: { _ in
+                    completion: { _, _ in
                         
                     }
                 )
@@ -196,7 +211,7 @@ class ViewController: UIViewController {
                     configure: { _ in
                         //config.displaySystemNavigationBar = false
                     },
-                    completion: { [weak self] data in
+                    completion: { [weak self] data, _ in
                         guard let data = data else { return }
                         self?.data = data
                     }
@@ -216,7 +231,7 @@ class ViewController: UIViewController {
                     config.appearance.displaySystemNavigationBar = true
                     config.preferNavigateMode = .modal
                 },
-                completion: { _ in
+                completion: { _, _ in
                     
                 }
             )
@@ -234,7 +249,7 @@ class ViewController: UIViewController {
                     config.appearance.displaySystemNavigationBar = false
                     config.preferNavigateMode = .modal
                 },
-                completion: { _ in
+                completion: { _, _ in
                     
                 }
             )

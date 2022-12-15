@@ -12,7 +12,7 @@ public struct Router {
     public static func showImagePicker(
         authorizing: @escaping (PHAuthorizationStatus) -> Void,
         configure: (inout Config) -> Void,
-        completion: @escaping (Data?) -> Void
+        completion: @escaping (Data?, ImagePickerViewController?) -> Void
     ) {
         var config = Config()
         configure(&config)
@@ -30,7 +30,7 @@ public struct Router {
         with data: Data,
         authorizing: @escaping (PHAuthorizationStatus) -> Void,
         configure: ((inout Config) -> Void)? = nil,
-        completion: @escaping (Data?) -> Void
+        completion: @escaping (Data?, ImagePickerViewController?) -> Void
     ) {
         Util.requestAlbumAuthorization { status in
             switch status {

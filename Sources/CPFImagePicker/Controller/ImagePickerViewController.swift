@@ -23,10 +23,10 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
     private let photoController: PhotoListViewController<PhotoCell>
     
     /// 完成回调
-    private let completion: (Data?) -> Void
+    private let completion: (Data?, ImagePickerViewController?) -> Void
     
     // MARK: - Lifecycle
-    public init(data: Data, completion: @escaping (Data?) -> Void) {
+    public init(data: Data, completion: @escaping (Data?, ImagePickerViewController?) -> Void) {
         self.data = data
         self.completion = completion
         navigationView = .init(config: data.config)
@@ -164,7 +164,7 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
         let config = self.data.config
         let data: Data? = status ? self.data : nil
         if status, !config.dismissWhenCompleted {
-            completion(data)
+            completion(data, self)
             return
         }
         
@@ -174,12 +174,29 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
             // 注意：导航栏的动画结束时机需要用delegate来处理，太过于麻烦，这里直接做个延时，如果涉及到自定义转场动画等，需要调整
             let delayDuration = animated ? 0.35 : 0.05
             DispatchQueue.main.asyncAfter(deadline: .now() + delayDuration) {
-                completion(data)
+                completion(data, nil)
             }
         } else {
             self.presentingViewController?.dismiss(animated: animated, completion: {
-                completion(data)
+                completion(data, nil)
             })
+        }
+    }
+    
+    /// 收起界面，不触发完成回调
+    public func dismissPicker(animated: Bool = true, completion: (() -> Void)?) {
+        guard !data.config.dismissWhenCompleted else {
+            assert(false, "自动收起界面开启时不支持手动调用")
+            return
+        }
+        
+        if let navigationController = self.navigationController, navigationController.viewControllers.first !== self {
+            self.navigationController?.popViewController(animated: animated)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                completion?()
+            }
+        } else {
+            self.presentingViewController?.dismiss(animated: animated, completion: completion)
         }
     }
     
