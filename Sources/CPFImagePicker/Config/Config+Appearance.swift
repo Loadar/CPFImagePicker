@@ -34,5 +34,8 @@ extension Config {
         }()
         /// 下拉图标尺寸
         public var popUpIconSize: CGSize = CGSize(width: 16, height: 16)
+        
+        /// 完成时是否执行动画
+        public var animatedWhenCompleted = true
     }
 }

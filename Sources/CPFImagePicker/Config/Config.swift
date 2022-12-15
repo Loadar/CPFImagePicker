@@ -16,5 +16,9 @@ public struct Config: Then {
     public var album = Album()
     /// 照片
     public var photo = Photo()
+    
+    
+    /// 是否在完成时收起界面，默认true
+    public var dismissWhenCompleted = true
 }
 

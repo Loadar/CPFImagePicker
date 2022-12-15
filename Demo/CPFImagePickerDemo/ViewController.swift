@@ -103,6 +103,8 @@ class ViewController: UIViewController {
                     },
                     configure: { [weak self] in
                         $0.appearance.displaySystemNavigationBar = true
+                        $0.appearance.animatedWhenCompleted = false
+                        $0.dismissWhenCompleted = true
                         $0.photo.maxSelectableCount = 5
                         $0.photo.photoShouldSelect = { [weak self] in
                             guard let self = self else { return false }
@@ -139,11 +141,21 @@ class ViewController: UIViewController {
                             showAuthAlert()
                         }
                     },
-                    configure: { _ in
+                    configure: { config in
+                        config.dismissWhenCompleted = false
+                        
                         //config.displaySystemNavigationBar = true
                     },
-                    completion: { _ in
-                        
+                    completion: { [weak self] _ in
+                        guard let self = self else { return }
+                        guard let navigationController = self.navigationController else { return }
+                        let testController = UIViewController().then {
+                            $0.view.backgroundColor = .green
+                        }
+                        var controllers = navigationController.viewControllers
+                        controllers.removeLast()
+                        controllers.append(testController)
+                        navigationController.setViewControllers(controllers, animated: true)
                     }
                 )
             }

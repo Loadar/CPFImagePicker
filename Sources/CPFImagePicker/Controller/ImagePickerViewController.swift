@@ -159,11 +159,26 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
         } else {
             data.restoreStatus()
         }
-        self.completion(data.photos)
+        
+        let completion = self.completion
+        let photos = data.photos
+        if status, !data.config.dismissWhenCompleted {
+            completion(photos)
+            return
+        }
+        
+        let animated = status ? data.config.appearance.animatedWhenCompleted : true
         if let navigationController = self.navigationController, navigationController.viewControllers.first !== self {
-            self.navigationController?.popViewController(animated: true)
+            self.navigationController?.popViewController(animated: animated)
+            // 注意：导航栏的动画结束时机需要用delegate来处理，太过于麻烦，这里直接做个延时，如果涉及到自定义转场动画等，需要调整
+            let delayDuration = animated ? 0.35 : 0.05
+            DispatchQueue.main.asyncAfter(deadline: .now() + delayDuration) {
+                completion(photos)
+            }
         } else {
-            self.presentingViewController?.dismiss(animated: true)
+            self.presentingViewController?.dismiss(animated: animated, completion: {
+                completion(photos)
+            })
         }
     }
     
