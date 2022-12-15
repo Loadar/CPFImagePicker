@@ -131,7 +131,7 @@ class ViewController: UIViewController {
                     }
                 )
             } else {
-                self.data = CPFImagePicker.Router.showImagePicker(
+                CPFImagePicker.Router.showImagePicker(
                     to: self.navigationController,
                     authorizing: { status in
                         switch status {
@@ -146,8 +146,12 @@ class ViewController: UIViewController {
                         
                         //config.displaySystemNavigationBar = true
                     },
-                    completion: { [weak self] _ in
+                    completion: { [weak self] data in
                         guard let self = self else { return }
+                        if self.data !== data {
+                            self.data = data
+                        }
+                        
                         guard let navigationController = self.navigationController else { return }
                         let testController = UIViewController().then {
                             $0.view.backgroundColor = .green
@@ -182,7 +186,7 @@ class ViewController: UIViewController {
                     }
                 )
             } else {
-                self.data = CPFImagePicker.Router.showImagePicker(
+                CPFImagePicker.Router.showImagePicker(
                     to: self.navigationController,
                     authorizing: { status in
                         switch status {
@@ -195,8 +199,8 @@ class ViewController: UIViewController {
                     configure: { _ in
                         //config.displaySystemNavigationBar = false
                     },
-                    completion: { _ in
-                        
+                    completion: { [weak self] data in
+                        self?.data = data
                     }
                 )
             }

@@ -23,10 +23,10 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
     private let photoController: PhotoListViewController<PhotoCell>
     
     /// 完成回调
-    private let completion: ([Photo]) -> Void
+    private let completion: (Data) -> Void
     
     // MARK: - Lifecycle
-    public init(data: Data, completion: @escaping ([Photo]) -> Void) {
+    public init(data: Data, completion: @escaping (Data) -> Void) {
         self.data = data
         self.completion = completion
         navigationView = .init(config: data.config)
@@ -161,9 +161,9 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
         }
         
         let completion = self.completion
-        let photos = data.photos
+        let data = self.data
         if status, !data.config.dismissWhenCompleted {
-            completion(photos)
+            completion(data)
             return
         }
         
@@ -173,11 +173,11 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
             // 注意：导航栏的动画结束时机需要用delegate来处理，太过于麻烦，这里直接做个延时，如果涉及到自定义转场动画等，需要调整
             let delayDuration = animated ? 0.35 : 0.05
             DispatchQueue.main.asyncAfter(deadline: .now() + delayDuration) {
-                completion(photos)
+                completion(data)
             }
         } else {
             self.presentingViewController?.dismiss(animated: animated, completion: {
-                completion(photos)
+                completion(data)
             })
         }
     }

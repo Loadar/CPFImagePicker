@@ -10,13 +10,12 @@ public struct Router {
     ///   - authorizing: 相册授权回调，由调用者根据情况处理
     ///   - configure: 配置
     ///   - completion: 完成回调
-    /// - Returns: 状态数据，若需要保留相关状态，需要持有返回值
     public static func showImagePicker(
         to navigationController: UINavigationController?,
         authorizing: @escaping (PHAuthorizationStatus) -> Void,
         configure: (inout Config) -> Void,
-        completion: @escaping ([Photo]) -> Void
-    ) -> Data {
+        completion: @escaping (Data) -> Void
+    ) {
         var config = Config()
         configure(&config)
         if let navigationController = navigationController {
@@ -25,7 +24,6 @@ public struct Router {
         
         let data = DataManager.shared.newData(of: config)
         showImagePicker(to: navigationController, with: data, authorizing: authorizing, completion: completion)
-        return data
     }
 
     /// 展示照片选择器
@@ -40,7 +38,7 @@ public struct Router {
         with data: Data,
         authorizing: @escaping (PHAuthorizationStatus) -> Void,
         configure: ((inout Config) -> Void)? = nil,
-        completion: @escaping ([Photo]) -> Void
+        completion: @escaping (Data) -> Void
     ) {
         
         Util.requestAlbumAuthorization { status in
