@@ -17,7 +17,7 @@ class ViewController: UIViewController {
     private let presentButton = CPFButton(type: .custom)
     private let presentButtonWithCustomNavigationBar = CPFButton(type: .custom)
     
-    private var data: CPFImagePicker.Data?
+    private var data: CPFImagePicker.AlbumData?
     
     
     override func viewDidLoad() {

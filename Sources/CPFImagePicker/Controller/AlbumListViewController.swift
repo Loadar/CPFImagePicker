@@ -15,7 +15,7 @@ open class AlbumListViewController<Cell: UITableViewCell & AnyCPFAlbumCell>: UIV
     public let tableView = UITableView(frame: .zero, style: .plain)
     
     /// 数据
-    private let data: Data
+    private let data: AlbumData
     /// 配置
     private var config: Config { data.config }
     /// 完成回调
@@ -36,7 +36,7 @@ open class AlbumListViewController<Cell: UITableViewCell & AnyCPFAlbumCell>: UIV
     }
     
     // MARK: - Lifecycle
-    public init(data: Data, completion: @escaping (Album?) -> Void) {
+    public init(data: AlbumData, completion: @escaping (Album?) -> Void) {
         self.data = data
         self.completion = completion
         super.init(nibName: nil, bundle: nil)
@@ -183,7 +183,7 @@ open class AlbumListViewController<Cell: UITableViewCell & AnyCPFAlbumCell>: UIV
     }
     
     // MARK: - Animation
-    public static func show(to controller: UIViewController, destination view: UIView, data: Data, completion: @escaping (Album?) -> Void) -> AlbumListViewController<Cell> {
+    public static func show(to controller: UIViewController, destination view: UIView, data: AlbumData, completion: @escaping (Album?) -> Void) -> AlbumListViewController<Cell> {
         let listController = AlbumListViewController(data: data, completion: completion)
         controller.addChild(listController)
         view.addSubview(listController.view)

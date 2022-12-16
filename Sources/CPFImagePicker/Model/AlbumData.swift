@@ -1,5 +1,5 @@
 //
-//  Data.swift
+//  AlbumData.swift
 //  
 //
 //  Created by Aaron on 2022/12/12.
@@ -7,8 +7,8 @@
 
 import Foundation
 
-/// 通用数据
-public class Data {
+/// 相册状态数据
+public class AlbumData {
     /// 配置
     public internal(set) var config: Config
     /// 选中的照片
@@ -43,7 +43,7 @@ public class Data {
     }
 }
 
-extension Data {
+extension AlbumData {
     /// 指定相册是否包含任意选中照片
     /// - Parameter album: 待检查的相册
     func anySelectedPhoto(in album: Album) -> Bool {
@@ -93,7 +93,7 @@ extension Data {
     }
 }
 
-extension Data {
+extension AlbumData {
     /// 添加观察者
     func add<T: AnyCPFDataObserver>(_ observer: T) {
         compactObservers()
@@ -113,7 +113,7 @@ extension Data {
     }
 }
 
-extension Data {
+extension AlbumData {
     func saveStatus() {
         if selectedPhotos != photos {
             selectedPhotos = photos

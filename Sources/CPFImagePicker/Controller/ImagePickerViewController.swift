@@ -15,7 +15,7 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
     private let contentView = UIView()
     
     
-    private let data: Data
+    private let data: AlbumData
     
     /// 相册
     private var albumController: AlbumListViewController<AlbumCell>?
@@ -23,10 +23,10 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
     private let photoController: PhotoListViewController<PhotoCell>
     
     /// 完成回调
-    private let completion: (Data?, ImagePickerViewController?) -> Void
+    private let completion: (AlbumData?, ImagePickerViewController?) -> Void
     
     // MARK: - Lifecycle
-    public init(data: Data, completion: @escaping (Data?, ImagePickerViewController?) -> Void) {
+    public init(data: AlbumData, completion: @escaping (AlbumData?, ImagePickerViewController?) -> Void) {
         self.data = data
         self.completion = completion
         navigationView = .init(config: data.config)
@@ -162,7 +162,7 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
         
         let completion = self.completion
         let config = self.data.config
-        let data: Data? = status ? self.data : nil
+        let data: AlbumData? = status ? self.data : nil
         if status, !config.dismissWhenCompleted {
             completion(data, self)
             return

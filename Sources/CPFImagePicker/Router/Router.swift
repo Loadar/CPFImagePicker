@@ -11,16 +11,16 @@ public struct Router {
     ///   - configure: 配置，若不指定，则使用状态数据内的配置
     ///   - completion: 完成回调
     public static func showImagePicker(
-        with data: Data? = nil,
+        with data: AlbumData? = nil,
         authorizing: @escaping (PHAuthorizationStatus) -> Void,
         configure: ((inout Config) -> Void)? = nil,
-        completion: @escaping (Data?, ImagePickerViewController?) -> Void
+        completion: @escaping (AlbumData?, ImagePickerViewController?) -> Void
     ) {
         Util.requestAlbumAuthorization { status in
             switch status {
             case .authorized, .limited:
                 
-                let finalData: Data
+                let finalData: AlbumData
                 if let data = data {
                     finalData = data
                 } else {
@@ -51,7 +51,7 @@ public struct Router {
         }
     }
     
-    private static func displayPicker(with data: Data, navigationController: UINavigationController?, completion: @escaping (Data?, ImagePickerViewController?) -> Void) {
+    private static func displayPicker(with data: AlbumData, navigationController: UINavigationController?, completion: @escaping (AlbumData?, ImagePickerViewController?) -> Void) {
         let controller = ImagePickerViewController(data: data, completion: completion)
         switch data.config.displayNavigateMode {
         case .push:

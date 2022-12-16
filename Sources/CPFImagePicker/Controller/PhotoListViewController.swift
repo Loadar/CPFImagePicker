@@ -21,12 +21,12 @@ open class PhotoListViewController<Cell: UICollectionViewCell & AnyCPFPhotoCell>
     public let collectionView: UICollectionView
     
     /// 数据
-    let data: Data
+    let data: AlbumData
     /// 展示的照片列表
     private var displayItems: [Item] = []
     
     // MARK: - Lifecylce
-    public init(data: Data) {
+    public init(data: AlbumData) {
         self.data = data
         collectionView = .init(frame: .zero, collectionViewLayout: data.config.photo.list.layoutProvider())
         super.init(nibName: nil, bundle: nil)

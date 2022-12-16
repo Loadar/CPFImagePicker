@@ -34,7 +34,7 @@ final class DataManager: NSObject {
     private var photoInfo: [Album: [Photo]] = [:]
     
     /// 展示的数据
-    private var displayDatas = [WeakBox<Data>]()
+    private var displayDatas = [WeakBox<AlbumData>]()
     
     /// 观察者
     private var observers: [WeakBox<AnyObject>] = []
@@ -92,14 +92,14 @@ extension DataManager {
 
 extension DataManager {
     /// 生成新数据
-    func newData(of config: Config) -> Data {
-        let data = Data(config: config)
+    func newData(of config: Config) -> AlbumData {
+        let data = AlbumData(config: config)
         self.displayDatas.append(WeakBox(data))
         return data
     }
     
     /// 移除指定数据
-    func removeData(_ data: Data) {
+    func removeData(_ data: AlbumData) {
         compactData()
         displayDatas.removeAll(where: { $0.weakObject === data })
     }

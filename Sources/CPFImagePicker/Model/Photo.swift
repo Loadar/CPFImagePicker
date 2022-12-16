@@ -73,6 +73,14 @@ public extension Photo {
         assert(false, "无法获取文件大小")
         return 0
     }
+    
+    @discardableResult
+    func originalPhotoData(
+        synchronous: Bool,
+        completion: @escaping ((data: Foundation.Data, info: [AnyHashable: Any], orientation: UIImage.Orientation)?) -> Void
+    ) -> PHImageRequestID {
+        Util.originalPhotoData(of: self, synchronous: synchronous, completion: completion)
+    }
 }
 
 extension Photo: Equatable {
