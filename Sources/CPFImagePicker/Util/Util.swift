@@ -100,71 +100,21 @@ extension Util {
 
 extension Util {
     static func fetchAlbums(completion: @escaping ([Album]) -> Void) {
-        
-        func albums(of result: PHFetchResult<PHAssetCollection>) -> [Album] {
-            func isCameraRoll(of collection: PHAssetCollection) -> Bool {
-                switch collection.assetCollectionSubtype {
-                case .smartAlbumUserLibrary: return true
-                default: return false
-                }
-            }
-
-            var albums = [Album]()
-            result.enumerateObjects { collection, index, _ in
-                
-                let isCameraRoll = isCameraRoll(of: collection)
-                
-                // 过滤空相册(相机胶卷不过滤，总是显示)
-                guard collection.estimatedAssetCount > 0 || isCameraRoll else { return }
-                // 过滤隐藏相册
-                guard collection.assetCollectionSubtype != .smartAlbumAllHidden else { return }
-                // 过滤最近删除相册
-                guard collection.assetCollectionSubtype.rawValue != 1000000201 else { return }
-                
-                let option = PHFetchOptions().then {
-                    $0.predicate = NSPredicate(format: "mediaType == %ld", PHAssetMediaType.image.rawValue)
-                    $0.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-                }
-
-                let assetResult = PHAsset.fetchAssets(in: collection, options: option)
-                // 无图片(除了相机胶卷)
-                guard assetResult.countOfAssets(with: .image) > 0 || isCameraRoll else { return }
-                
-                let coverPhoto = assetResult.firstObject.flatMap {
-                    Photo(asset: $0)
-                }
-                let album = Album(
-                    collection: collection,
-                    assetResult: assetResult,
-                    name: collection.localizedTitle ?? "",
-                    isCameraRoll: isCameraRoll,
-                    photoCount: assetResult.countOfAssets(with: .image),
-                    coverPhoto: coverPhoto
-                )
-                albums.append(album)
-            }
-            return albums
-        }
-        
-        var albumCollections: [PHFetchResult<PHAssetCollection>] = []
-        let smartAlbums = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .albumRegular, options: nil)
-        albumCollections.append(smartAlbums)
-        if let topLevelUserCollections = PHAssetCollection.fetchTopLevelUserCollections(with: nil) as? PHFetchResult<PHAssetCollection> {
-            albumCollections.append(topLevelUserCollections)
-        }
-        let syncedAlbums = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .albumSyncedAlbum, options: nil)
-        albumCollections.append(syncedAlbums)
-
         var finalAlbums = [Album]()
-        for result in albumCollections {
-            let albums = albums(of: result)
-            albums.forEach { item in
-                if !finalAlbums.contains(where: { $0.collection == item.collection }) {
-                    finalAlbums.append(item)
-                }
+        let smartAlbumResult = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .any, options: nil)
+        for album in self.albums(of: smartAlbumResult) {
+            if !finalAlbums.contains(where: { $0.collection == album.collection }) {
+                finalAlbums.append(album)
             }
         }
         
+        let syncedAlbumResult = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: nil)
+        for album in self.albums(of: syncedAlbumResult) {
+            if !finalAlbums.contains(where: { $0.collection == album.collection }) {
+                finalAlbums.append(album)
+            }
+        }
+
         if let index = finalAlbums.firstIndex(where: { $0.isCameraRoll }) {
             let cameraRollAlbum = finalAlbums.remove(at: index)
             finalAlbums.insert(cameraRollAlbum, at: 0)
@@ -173,6 +123,73 @@ extension Util {
         completion(finalAlbums)
     }
     
+    private static func albums(of result: PHFetchResult<PHAssetCollection>) -> [Album] {
+        var albums = [Album]()
+        result.enumerateObjects { collection, index, _ in
+            if let album = self.album(of: collection) {
+                albums.append(album)
+            }
+        }
+        return albums
+    }
+    
+    private static func albums(of result: PHFetchResult<PHCollection>) -> [Album] {
+        var finalAlbums = [Album]()
+        result.enumerateObjects { collection, index, _ in
+            if let list = collection as? PHCollectionList {
+                // 取文件夹中的相册
+                let result = PHAssetCollection.fetchCollections(in: list, options: nil)
+                finalAlbums.append(contentsOf: self.albums(of: result))
+            } else if let collection = collection as? PHAssetCollection {
+                if let album = self.album(of: collection) {
+                    finalAlbums.append(album)
+                }
+            } else {
+                // do nothing
+            }
+        }
+        return finalAlbums
+    }
+        
+    private static func album(of collection: PHAssetCollection) -> Album? {
+        func isCameraRoll(of collection: PHAssetCollection) -> Bool {
+            switch collection.assetCollectionSubtype {
+            case .smartAlbumUserLibrary: return true
+            default: return false
+            }
+        }
+
+        let isCameraRoll = isCameraRoll(of: collection)
+        
+        // 过滤空相册(相机胶卷不过滤，总是显示)
+        guard collection.estimatedAssetCount > 0 || isCameraRoll else { return nil }
+        // 过滤隐藏相册
+        guard collection.assetCollectionSubtype != .smartAlbumAllHidden else { return nil }
+        // 过滤最近删除相册
+        guard collection.assetCollectionSubtype.rawValue != 1000000201 else { return nil }
+            
+        let option = PHFetchOptions().then {
+            $0.predicate = NSPredicate(format: "mediaType == %ld", PHAssetMediaType.image.rawValue)
+            $0.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+        }
+        
+        let assetResult = PHAsset.fetchAssets(in: collection, options: option)
+        // 无照片(除了相机胶卷)
+        guard assetResult.countOfAssets(with: .image) > 0 || isCameraRoll else { return nil }
+        
+        let coverPhoto = assetResult.firstObject.flatMap {
+            Photo(asset: $0)
+        }
+        return Album(
+            collection: collection,
+            assetResult: assetResult,
+            name: collection.localizedTitle ?? "",
+            isCameraRoll: isCameraRoll,
+            photoCount: assetResult.countOfAssets(with: .image),
+            coverPhoto: coverPhoto
+        )
+    }
+        
     /// 获取指定相册的照片assert
     /// - Parameters:
     ///   - collection: 相册对应的collection
