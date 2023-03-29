@@ -19,12 +19,12 @@ open class NavigationView: UIView {
     }
     
     /// 返回按钮
-    public let backButton: CPFButton
+    public let backButton: Button
     /// 标题
-    public let titleButton: CPFButton
+    public let titleButton: Button
     /// 下一步
-    public let nextButton = CPFButton {
-        $0.margin = UIEdgeInsets(top: 7, left: 14, bottom: 7, right: 14)
+    public let nextButton = Button {
+        $0.contentInsets = UIEdgeInsets(top: 7, left: 14, bottom: 7, right: 14)
     }
     
     /// 配置
@@ -33,26 +33,25 @@ open class NavigationView: UIView {
     // MARK: - Lifecycle
     public init(config: Config) {
         self.config = config
-        backButton = CPFButton {
+        backButton = Button {
             let iconSize = config.appearance.backIconSize
             if iconSize.width <= CPF.backButtonSize.width, iconSize.height <= CPF.backButtonSize.height {
                 $0.imageSize = iconSize
                 let xInset = CPF.backButtonSize.width - iconSize.width
                 let yInset = (CPF.backButtonSize.height - iconSize.height) / 2
-                $0.margin = UIEdgeInsets(top: yInset, left: 0, bottom: yInset, right: xInset)
+                $0.contentInsets = UIEdgeInsets(top: yInset, left: 0, bottom: yInset, right: xInset)
             } else {
                 $0.imageSize = CPF.backButtonSize
             }
         }
-        titleButton = CPFButton {
+        titleButton = Button {
             $0.priority = .text
             $0.interSpace = 0
             $0.imageSize = config.appearance.popUpIconSize
             // 234 = 约为 16*2(两边按钮边距)+91*2(下一步按钮，2位数字时)+10*2(内容间距)
-            $0.textMaxWidth = UIScreen.main.bounds.width - 234 - $0.imageSize.width - $0.interSpace
-            
-            $0.crossDirectionSize = 44
-            $0.minDirectionSize = 44
+            $0.maxTextWidth = UIScreen.main.bounds.width - 234 - $0.imageSize.width - $0.interSpace
+            $0.size = CGSize(width: 0, height: 44)
+            $0.minSize = CGSize(width: 44, height: 0)
         }
         super.init(frame: CGRect(origin: .zero, size: CGSize(width: UIScreen.main.bounds.width, height: 44)))
         configureView()

@@ -15,7 +15,8 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/devxoul/Then", from: Version("3.0.0")),
-        .package(url: "https://github.com/Loadar/CPFUIKit.git", from: Version("0.1.11")),
+        //.package(url: "https://github.com/Loadar/CPFUIKit.git", from: Version("0.1.11")),
+        .package(url: "https://github.com/Loadar/CPFUIKit.git", branch: "master"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.

@@ -12,10 +12,10 @@ import CPFUIKit
 
 class ViewController: UIViewController {
     
-    private let pushButton = CPFButton(type: .custom)
-    private let pushButtonWithCustomNavigationBar = CPFButton(type: .custom)
-    private let presentButton = CPFButton(type: .custom)
-    private let presentButtonWithCustomNavigationBar = CPFButton(type: .custom)
+    private let pushButton = Button(type: .custom)
+    private let pushButtonWithCustomNavigationBar = Button(type: .custom)
+    private let presentButton = Button(type: .custom)
+    private let presentButtonWithCustomNavigationBar = Button(type: .custom)
     
     private var data: CPFImagePicker.AlbumData?
     
