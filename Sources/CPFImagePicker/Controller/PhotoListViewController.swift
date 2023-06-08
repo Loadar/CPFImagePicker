@@ -224,7 +224,15 @@ open class PhotoListViewController<Cell>: UIViewController,
         }
         
         picker.dismiss(animated: true, completion: { [weak self] in
-            Util.save(image: image, to: self?.data.album) { [weak self] id in
+            guard let self = self else { return }
+            
+            let album: Album?
+            if let item = self.data.album, !item.isCameraRoll {
+                album = item
+            } else {
+                album = nil
+            }
+            Util.save(image: image, to: album) { [weak self] id in
                 guard let id = id, !id.isEmpty else { return }
                 self?.newAddedPhotoId = id
             }
