@@ -32,52 +32,7 @@ public struct Util {
 }
 
 extension Util {
-    /// 请求相册权限
-    /// - Parameters:
-    ///   - completion: 权限请求结果
-    public static func requestAlbumAuthorization(completion: @escaping (PHAuthorizationStatus) -> Void) {
-        // 检查目前权限
-        let status = currentAlbumAuthorizationStatus()
-        switch status {
-        case .authorized, .limited:
-            // 已授权 & 允许了部分图片权限(iOS 14及以上)
-            completion(status)
-            return
-        default:
-            break
-        }
-        
-        // 尝试向系统申请权限
-        if #available(iOS 14, *) {
-            PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
-                DispatchQueue.main.async {
-                    completion(status)
-                }
-            }
-        } else {
-            PHPhotoLibrary.requestAuthorization { status in
-                DispatchQueue.main.async {
-                    completion(status)
-                }
-            }
-        }
-    }
-    
-    /// 当前相册权限
-    public static func currentAlbumAuthorizationStatus() -> PHAuthorizationStatus {
-        let status: PHAuthorizationStatus
-        if #available(iOS 14, *) {
-            // iOS 14以上需要使用新的api获取权限
-            status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-        } else {
-            status = PHPhotoLibrary.authorizationStatus()
-        }
-        return status
-    }
-}
-
-extension Util {
-    internal static func color(with hexValue: Int, containsAlpha: Bool = false) -> UIColor {
+    public static func color(with hexValue: Int, containsAlpha: Bool = false) -> UIColor {
         let red: CGFloat
         let green: CGFloat
         let blue: CGFloat
@@ -345,5 +300,15 @@ extension Util {
     /// - Parameter id: 请求id
     public static func cancelPhotoImageRequest(of id: PHImageRequestID) {
         PHImageManager.default().cancelImageRequest(id)
+    }
+}
+
+extension Util {
+    public static var topController: UIViewController? {
+        var controller = UIApplication.shared.keyWindow?.rootViewController
+        while let aController = controller?.presentedViewController {
+            controller = aController
+        }
+        return controller
     }
 }

@@ -13,7 +13,7 @@ public struct Album {
     /// 底层数据
     public let collection: PHAssetCollection
     /// 照片列表底层数据
-    private let assetResult: PHFetchResult<PHAsset>
+    let assetResult: PHFetchResult<PHAsset>
     
     /// 名称
     public let name: String

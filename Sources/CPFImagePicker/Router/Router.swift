@@ -10,11 +10,12 @@ public struct Router {
     ///   - authorizing: 相册授权回调，由调用者根据情况处理
     ///   - configure: 配置，若不指定，则使用状态数据内的配置
     ///   - completion: 完成回调
-    public static func showImagePicker(
+    public static func showImagePicker<T: UIViewController & AnyCPFImagePickerViewController>(
         with data: AlbumData? = nil,
+        controller: T.Type,
         authorizing: @escaping (PHAuthorizationStatus) -> Void,
         configure: ((inout Config) -> Void)? = nil,
-        completion: @escaping (AlbumData?, ImagePickerViewController?) -> Void
+        completion: @escaping (AlbumData?, T?) -> Void
     ) {
         Util.requestAlbumAuthorization { status in
             switch status {
@@ -51,8 +52,16 @@ public struct Router {
         }
     }
     
-    private static func displayPicker(with data: AlbumData, navigationController: UINavigationController?, completion: @escaping (AlbumData?, ImagePickerViewController?) -> Void) {
-        let controller = ImagePickerViewController(data: data, completion: completion)
+    private static func displayPicker<T: UIViewController & AnyCPFImagePickerViewController>(with data: AlbumData, navigationController: UINavigationController?, completion: @escaping (AlbumData?, T?) -> Void) {
+        let controller = T.init(data: data)
+        controller.completion = { [weak controller] data, status in
+            if status {
+                completion(data, controller)
+            } else {
+                completion(data, nil)
+            }
+        }
+        
         switch data.config.displayNavigateMode {
         case .push:
             navigationController?.pushViewController(controller, animated: true)

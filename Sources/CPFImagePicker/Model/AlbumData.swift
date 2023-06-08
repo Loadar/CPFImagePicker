@@ -15,7 +15,7 @@ public class AlbumData {
     public private(set) var photos = [Photo]()
     
     /// 选中的照片(包含操作中的)
-    private(set) var selectedPhotos: [Photo] {
+    public private(set) var selectedPhotos: [Photo] {
         didSet {
             if selectedPhotos != oldValue {
                 observers
@@ -53,6 +53,10 @@ extension AlbumData {
     /// 指定照片是否已选中
     func isSelected(of photo: Photo) -> Bool {
         selectedPhotos.contains(photo)
+    }
+    /// 指定照片的选中索引
+    func selectedIndex(of photo: Photo) -> Int? {
+        selectedPhotos.firstIndex(of: photo)
     }
     
     /// 是否还可以选择更多照片
@@ -130,5 +134,15 @@ extension AlbumData {
         if photos != selectedPhotos {
             photos = selectedPhotos
         }
+    }
+}
+
+extension AlbumData {
+    public func updateConfig(_ updater: (inout Config) -> Void) {
+        updater(&config)
+        
+        observers
+            .compactMap { $0.weakObject as? AnyCPFDataObserver }
+            .forEach { $0.selectedPhotosDidChanged() }
     }
 }

@@ -25,7 +25,7 @@ public class Throttler {
         self.semaphore = .init(value: 1)
     }
     
-    func run(onMainThread: Bool = true, _ action: @escaping () -> Void) {
+    public func run(onMainThread: Bool = true, _ action: @escaping () -> Void) {
         queue.async { [weak self] in
             guard let self = self else { return }
             
@@ -67,7 +67,7 @@ extension UIView {
         }
     }
     
-    func cpfThrottler(maxInterval: TimeInterval = 0.2) -> Throttler {
+    public func cpfThrottler(maxInterval: TimeInterval = 0.2) -> Throttler {
         if let throttler = cpf_Throttler, throttler.maxInterval == maxInterval {
             return throttler
         } else {

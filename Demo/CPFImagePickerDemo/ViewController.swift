@@ -83,7 +83,7 @@ class ViewController: UIViewController {
                     UIApplication.shared.open(url, options: [:], completionHandler: nil)
                 }))
             }
-            self.present(controller, animated: true)
+            Util.topController?.present(controller, animated: true)
         }
         
         if button === pushButton {
@@ -92,6 +92,7 @@ class ViewController: UIViewController {
             if let data = self.data {
                 CPFImagePicker.Router.showImagePicker(
                     with: data,
+                    controller: CustomImagePickerViewController.self,
                     authorizing: { status in
                         switch status {
                         case .authorized, .limited:
@@ -100,30 +101,29 @@ class ViewController: UIViewController {
                             showAuthAlert()
                         }
                     },
-                    configure: { [weak self] in
+                    configure: {
                         $0.appearance.displaySystemNavigationBar = true
                         $0.appearance.animatedWhenCompleted = false
                         $0.dismissWhenCompleted = true
                         $0.photo.maxSelectableCount = 5
-                        $0.photo.photoShouldSelect = { [weak self] in
-                            guard let self = self else { return false }
-                            
+                        $0.photo.photoShouldSelect = {
                             if $0.fileSize > 1000 * 1024 {
                                 let controller = UIAlertController(title: "所选照片超过限制大小", message: nil, preferredStyle: .alert).then {
                                     $0.addAction(UIAlertAction(title: "知道了", style: .cancel))
                                 }
-                                self.present(controller, animated: true)
+                                Util.topController?.present(controller, animated: true)
                                 return false
                             } else {
                                 return true
                             }
                         }
-                        $0.photo.tryToSelectPhotoBeyondMaxCount = { [weak self] _ in
+                        $0.photo.tryToSelectPhotoBeyondMaxCount = { _ in
                             let controller = UIAlertController(title: "已达到最大可选择图片数目", message: nil, preferredStyle: .alert).then {
                                 $0.addAction(UIAlertAction(title: "知道了", style: .cancel))
                             }
-                            self?.present(controller, animated: true)
+                            Util.topController?.present(controller, animated: true)
                         }
+                        $0.photo.cell.displaySelectedIconIndex = Int.random(in: 0..<10) % 2 == 0
                     },
                     completion: { _, _ in
                         
@@ -131,6 +131,7 @@ class ViewController: UIViewController {
                 )
             } else {
                 CPFImagePicker.Router.showImagePicker(
+                    controller: CustomImagePickerViewController.self,
                     authorizing: { status in
                         switch status {
                         case .authorized, .limited:
@@ -142,8 +143,11 @@ class ViewController: UIViewController {
                     configure: { config in
                         config.dismissWhenCompleted = false
                         config.preferNavigateMode = .modal
-
+                        
                         //config.displaySystemNavigationBar = true
+                        
+                        config.photo.maxSelectableCount = 20
+                        config.photo.cell.displaySelectedIconIndex = true
                     },
                     completion: { [weak self] data, picker in
                         guard let self = self else { return }
@@ -162,7 +166,7 @@ class ViewController: UIViewController {
                                 controllers.append(testController)
                                 navigationController.setViewControllers(controllers, animated: true)
                             } else {
-                                self.present(testController, animated: true)
+                                Util.topController?.present(testController, animated: true)
                             }
                         }
                         
@@ -182,6 +186,7 @@ class ViewController: UIViewController {
             if let data = self.data {
                 CPFImagePicker.Router.showImagePicker(
                     with: data,
+                    controller: ImagePickerViewController.self,
                     authorizing: { status in
                         switch status {
                         case .authorized, .limited:
@@ -200,6 +205,7 @@ class ViewController: UIViewController {
                 )
             } else {
                 CPFImagePicker.Router.showImagePicker(
+                    controller: ImagePickerViewController.self,
                     authorizing: { status in
                         switch status {
                         case .authorized, .limited:
@@ -219,6 +225,7 @@ class ViewController: UIViewController {
             }
         } else if button === presentButton {
             let _ = CPFImagePicker.Router.showImagePicker(
+                controller: ImagePickerViewController.self,
                 authorizing: { status in
                     switch status {
                     case .authorized, .limited:
@@ -237,6 +244,7 @@ class ViewController: UIViewController {
             )
         } else if button === presentButtonWithCustomNavigationBar {
             let _ = CPFImagePicker.Router.showImagePicker(
+                controller: ImagePickerViewController.self,
                 authorizing: { status in
                     switch status {
                     case .authorized, .limited:
@@ -256,4 +264,3 @@ class ViewController: UIViewController {
         }
     }
 }
-

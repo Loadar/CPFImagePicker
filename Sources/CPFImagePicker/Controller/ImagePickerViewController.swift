@@ -8,14 +8,13 @@
 import UIKit
 
 /// 图片选择器
-open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyCPFImagePickerObserver {
+open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyCPFImagePickerObserver, AnyCPFImagePickerViewController {
     /// 导航栏
-    private let navigationView: NavigationView
+    public let navigationView: NavigationView
     /// 内容
-    private let contentView = UIView()
+    public let contentView = UIView()
     
-    
-    private let data: AlbumData
+    public let data: AlbumData
     
     /// 相册
     private var albumController: AlbumListViewController<AlbumCell>?
@@ -23,12 +22,11 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
     private let photoController: PhotoListViewController<PhotoCell>
     
     /// 完成回调
-    private let completion: (AlbumData?, ImagePickerViewController?) -> Void
+    public var completion: ((AlbumData?, Bool) -> Void)?
     
     // MARK: - Lifecycle
-    public init(data: AlbumData, completion: @escaping (AlbumData?, ImagePickerViewController?) -> Void) {
+    public required init(data: AlbumData) {
         self.data = data
-        self.completion = completion
         navigationView = .init(config: data.config)
         photoController = .init(data: data)
         super.init(nibName: nil, bundle: nil)
@@ -53,7 +51,7 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
     }
     
     // MARK: - UI
-    private func configureView() {
+    open func configureView() {
         // views
         addChild(photoController)
         view.do {
@@ -137,7 +135,7 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
     }
     
     /// 配置事件
-    func configureActions() {
+    open func configureActions() {
         // 返回
         navigationView.backButton.addTarget(self, action: #selector(back), for: .touchUpInside)
         // 标题点击
@@ -153,7 +151,7 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
         }
     }
     
-    private func dismiss(with status: Bool) {
+    public func dismiss(with status: Bool) {
         if status {
             data.saveChanges()
         } else {
@@ -164,7 +162,7 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
         let config = self.data.config
         let data: AlbumData? = status ? self.data : nil
         if status, !config.dismissWhenCompleted {
-            completion(data, self)
+            completion?(data, true)
             return
         }
         
@@ -174,11 +172,11 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
             // 注意：导航栏的动画结束时机需要用delegate来处理，太过于麻烦，这里直接做个延时，如果涉及到自定义转场动画等，需要调整
             let delayDuration = animated ? 0.35 : 0.05
             DispatchQueue.main.asyncAfter(deadline: .now() + delayDuration) {
-                completion(data, nil)
+                completion?(data, false)
             }
         } else {
             self.presentingViewController?.dismiss(animated: animated, completion: {
-                completion(data, nil)
+                completion?(data, false)
             })
         }
     }
@@ -258,11 +256,11 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
     }
     
     // MARK: - AnyCPFDataObserver
-    public func selectedAlbumDidChanged() {
+    open func selectedAlbumDidChanged() {
         updateTitle()
     }
     
-    public func selectedPhotosDidChanged() {
+    open func selectedPhotosDidChanged() {
         navigationView.updateNextButton(with: data.selectedPhotos.count)
     }
     

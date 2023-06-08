@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		931E4A162948182B00527821 /* LookinServer in Frameworks */ = {isa = PBXBuildFile; productRef = 931E4A152948182B00527821 /* LookinServer */; };
+		933E357D2A31B5E600CF7559 /* CustomImagePickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 933E357C2A31B5E600CF7559 /* CustomImagePickerViewController.swift */; };
 		93535A7B2949D41900690845 /* CPFImagePicker in Frameworks */ = {isa = PBXBuildFile; productRef = 93535A7A2949D41900690845 /* CPFImagePicker */; };
 		935440C12940A0C1003FE091 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935440C02940A0C1003FE091 /* AppDelegate.swift */; };
 		935440C52940A0C1003FE091 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 935440C42940A0C1003FE091 /* ViewController.swift */; };
@@ -40,6 +41,7 @@
 		931E4A1729487E3600527821 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
 		931E4A1829487E3600527821 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
 		931E4A1A2949D04000527821 /* CPFImagePicker */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = CPFImagePicker; path = ..; sourceTree = "<group>"; };
+		933E357C2A31B5E600CF7559 /* CustomImagePickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomImagePickerViewController.swift; sourceTree = "<group>"; };
 		935440BD2940A0C1003FE091 /* CPFImagePickerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CPFImagePickerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		935440C02940A0C1003FE091 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		935440C42940A0C1003FE091 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -116,6 +118,7 @@
 			children = (
 				935440C02940A0C1003FE091 /* AppDelegate.swift */,
 				935440C42940A0C1003FE091 /* ViewController.swift */,
+				933E357C2A31B5E600CF7559 /* CustomImagePickerViewController.swift */,
 				935440C62940A0C1003FE091 /* Main.storyboard */,
 				935440C92940A0C4003FE091 /* Assets.xcassets */,
 				935440CB2940A0C4003FE091 /* LaunchScreen.storyboard */,
@@ -288,6 +291,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				935440C52940A0C1003FE091 /* ViewController.swift in Sources */,
+				933E357D2A31B5E600CF7559 /* CustomImagePickerViewController.swift in Sources */,
 				935440C12940A0C1003FE091 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -472,6 +476,7 @@
 				DEVELOPMENT_TEAM = 628CHGGHXP;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CPFImagePickerDemo/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "需要您授予访问相机的权限以拍照";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "需要您授予访问相册的权限以保存照片";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "需要您授予访问相册的权限以选择照片";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -502,6 +507,7 @@
 				DEVELOPMENT_TEAM = 628CHGGHXP;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CPFImagePickerDemo/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "需要您授予访问相机的权限以拍照";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "需要您授予访问相册的权限以保存照片";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "需要您授予访问相册的权限以选择照片";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

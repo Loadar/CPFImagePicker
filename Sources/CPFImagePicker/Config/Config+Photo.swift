@@ -17,6 +17,9 @@ extension Config {
         /// 尝试选取超出限制数目的照片
         public var tryToSelectPhotoBeyondMaxCount: ((Config) -> Void)?
         
+        /// 是否支持拍照，默认true
+        public var takePhotoEnabled = true
+        
         /// 列表
         public var list = List()
         /// Cell
@@ -75,6 +78,21 @@ extension Config.Photo {
                 return nil
             }
         }()
+        /// 指定序号的选中图标背景，序号需要额外添加
+        public var selectedBackgroundIcon: UIImage? = {
+            if let url = Bundle.module.url(forResource: "selectedBackground", withExtension: "png") {
+                return UIImage(contentsOfFile: url.path)
+            } else {
+                return nil
+            }
+        }()
+        /// 展示的选中图标
+        public var displaySelectedIcon: UIImage? {
+            displaySelectedIconIndex ? selectedBackgroundIcon : selectedIcon
+        }
+        /// 选中图片是否展示序号
+        public var displaySelectedIconIndex = false
+        
         
         /// 无法选中蒙层颜色，默认.white, 40%alpha
         public var maskColor: UIColor = .white.withAlphaComponent(0.4)

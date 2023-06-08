@@ -13,6 +13,8 @@ open class PhotoCell: UICollectionViewCell, AnyCPFPhotoCell {
     public let thumbnailView = UIImageView()
     /// 选中状态
     public let selectStatusView = UIButton(type: .custom)
+    /// 选中序号
+    public let selectedIndexLabel = UILabel()
     /// 无法选中蒙层
     public let imselectableMaskView = UIView()
     
@@ -40,12 +42,14 @@ open class PhotoCell: UICollectionViewCell, AnyCPFPhotoCell {
         contentView.do {
             $0.addSubview(thumbnailView)
             $0.addSubview(selectStatusView)
+            $0.addSubview(selectedIndexLabel)
             $0.addSubview(imselectableMaskView)
         }
         
         // layouts
         thumbnailView.translatesAutoresizingMaskIntoConstraints = false
         selectStatusView.translatesAutoresizingMaskIntoConstraints = false
+        selectedIndexLabel.translatesAutoresizingMaskIntoConstraints = false
         imselectableMaskView.translatesAutoresizingMaskIntoConstraints = false
         
         thumbnailView.do {
@@ -70,6 +74,13 @@ open class PhotoCell: UICollectionViewCell, AnyCPFPhotoCell {
             ]
             contentView.addConstraints(constraints)
         }
+        selectedIndexLabel.do {
+            let constraints: [NSLayoutConstraint] = [
+                $0.centerXAnchor.constraint(equalTo: selectStatusView.centerXAnchor),
+                $0.centerYAnchor.constraint(equalTo: selectStatusView.centerYAnchor)
+            ]
+            contentView.addConstraints(constraints)
+        }
         imselectableMaskView.do {
             let constraints: [NSLayoutConstraint] = [
                 $0.topAnchor.constraint(equalTo: contentView.topAnchor),
@@ -89,6 +100,11 @@ open class PhotoCell: UICollectionViewCell, AnyCPFPhotoCell {
             $0.isUserInteractionEnabled = false
             $0.imageView?.contentMode = .scaleAspectFit
         }
+        selectedIndexLabel.do {
+            $0.font = .systemFont(ofSize: 12, weight: .medium)
+            $0.textColor = .white
+            $0.isHidden = true
+        }
         imselectableMaskView.do {
             $0.isUserInteractionEnabled = false
             $0.backgroundColor = .white.withAlphaComponent(0.4)
@@ -97,10 +113,10 @@ open class PhotoCell: UICollectionViewCell, AnyCPFPhotoCell {
     }
     
     // MARK: - AnyCPFPhotoCell
-    public func updateData(_ photo: Photo, isSelected: Bool, selectable: Bool) {
+    public func updateData(_ photo: Photo, isSelected: Bool, selectedIndex: Int, selectable: Bool) {
         self.displayPhoto = photo
 
-        selectStatusView.isSelected = isSelected
+        update(selectedState: isSelected, selectedIndex: selectedIndex)
         imselectableMaskView.isHidden = isSelected || selectable
         
         self.layoutIfNeeded()
@@ -111,8 +127,16 @@ open class PhotoCell: UICollectionViewCell, AnyCPFPhotoCell {
         }
     }
     
-    public func update(selectedState: Bool) {
+    public func update(selectedState: Bool, selectedIndex: Int) {
         selectStatusView.isSelected = selectedState
+        if !selectedIndexLabel.isHidden {
+            if selectedState {
+                selectedIndexLabel.alpha = 1
+                selectedIndexLabel.text = "\(selectedIndex + 1)"
+            } else {
+                selectedIndexLabel.alpha = 0
+            }
+        }
     }
     
     public func update(config: Config.Photo.Cell) {
@@ -138,9 +162,10 @@ open class PhotoCell: UICollectionViewCell, AnyCPFPhotoCell {
         if let icon = config.unSelectedIcon, icon !== selectStatusView.image(for: .normal) {
             selectStatusView.setImage(icon, for: .normal)
         }
-        if let icon = config.selectedIcon, icon !== selectStatusView.image(for: .selected) {
+        if let icon = config.displaySelectedIcon, icon !== selectStatusView.image(for: .selected) {
             selectStatusView.setImage(icon, for: .selected)
         }
+        selectedIndexLabel.isHidden = !config.displaySelectedIconIndex
 
         imselectableMaskView.backgroundColor = config.maskColor
     }
