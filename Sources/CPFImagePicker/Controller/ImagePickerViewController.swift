@@ -17,9 +17,9 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
     public let data: AlbumData
     
     /// 相册
-    private var albumController: AlbumListViewController<AlbumCell>?
+    public private(set) var albumController: AlbumListViewController<AlbumCell>?
     /// 照片
-    private let photoController: PhotoListViewController<PhotoCell>
+    public let photoController: PhotoListViewController<PhotoCell>
     
     /// 完成回调
     public var completion: ((AlbumData?, Bool) -> Void)?

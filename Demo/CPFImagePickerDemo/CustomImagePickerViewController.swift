@@ -38,7 +38,7 @@ final class CustomImagePickerViewController: ImagePickerViewController {
         view.addLayoutGuide(toolViewLayoutGuide)
         
         toolViewLayoutGuide.do {
-            var constraints: [NSLayoutConstraint] = [
+            let constraints: [NSLayoutConstraint] = [
                 $0.leftAnchor.constraint(equalTo: view.leftAnchor),
                 $0.rightAnchor.constraint(equalTo: view.rightAnchor),
                 $0.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
@@ -93,6 +93,8 @@ final class CustomImagePickerViewController: ImagePickerViewController {
             $0.setTitleColor(.white, for: .normal)
             $0.setTitle("完成", for: .normal)
         }
+        
+        photoController.additionalSafeAreaInsets = UIEdgeInsets(top: 0, left: 0, bottom: 64, right: 0)
         
         selectedPhotosDidChanged()
     }

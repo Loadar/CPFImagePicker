@@ -80,7 +80,11 @@ public extension Util {
         }
         
         requestAlbumAuthorization { status in
-            guard case .authorized = status else {
+            switch status {
+            case .authorized, .limited:
+                // 保存图片
+                savingImage()
+            default:
                 let alertController = UIAlertController(title: "无法保存", message: "请在设置中，允许App访问【所有照片】", preferredStyle: .alert).then {
                     $0.addAction(UIAlertAction(title: "取消", style: .cancel))
                     $0.addAction(UIAlertAction(title: "去设置", style: .default, handler: { _ in
@@ -90,11 +94,7 @@ public extension Util {
                     }))
                 }
                 Util.topController?.present(alertController, animated: true)
-                return
             }
-            
-            // 保存图片
-            savingImage()
         }
     }
 }

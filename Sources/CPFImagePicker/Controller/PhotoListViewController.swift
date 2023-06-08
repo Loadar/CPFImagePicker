@@ -57,6 +57,19 @@ open class PhotoListViewController<Cell>: UIViewController,
         reloadPhotos()
     }
     
+    open override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if let image = data.photoTaken {
+            data.photoTaken = nil
+            
+            Util.save(image: image, to: nil) { [weak self] id in
+                guard let id = id, !id.isEmpty else { return }
+                self?.newAddedPhotoId = id
+            }
+        }
+    }
+    
     // MARK: - UI
     public func configureView() {
         // views
@@ -80,7 +93,7 @@ open class PhotoListViewController<Cell>: UIViewController,
         
         // attributes
         collectionView.do {
-            $0.contentInsetAdjustmentBehavior = .never
+            $0.contentInsetAdjustmentBehavior = .automatic
             $0.backgroundColor = Util.color(with: 0xf5f5f5)
             
             $0.register(Cell.self, forCellWithReuseIdentifier: String(describing: Cell.self))
@@ -195,7 +208,6 @@ open class PhotoListViewController<Cell>: UIViewController,
         self.displayItems = displayItems
         
         if let newAddedPhotoId = newAddedPhotoId {
-            self.newAddedPhotoId = nil
             if let photo = photos.first(where: { $0.asset.localIdentifier == newAddedPhotoId }), !data.isSelected(of: photo) {
                 if data.selectedPhotos.count >= data.config.photo.maxSelectableCount {
                     data.config.photo.tryToSelectPhotoBeyondMaxCount?(data.config)
@@ -203,6 +215,8 @@ open class PhotoListViewController<Cell>: UIViewController,
                     data.add(photo: photo)
                 }
             }
+            
+            self.newAddedPhotoId = nil
         }
         
         self.collectionView.reloadData()

@@ -5,7 +5,7 @@
 //  Created by Aaron on 2022/12/12.
 //
 
-import Foundation
+import UIKit
 
 /// 相册状态数据
 public class AlbumData {
@@ -35,6 +35,9 @@ public class AlbumData {
     
     /// 观察者
     private var observers: [WeakBox<AnyObject>] = []
+    
+    /// 带入的拍摄的照片数据
+    var photoTaken: UIImage?
     
     public init(config: Config) {
         self.config = config

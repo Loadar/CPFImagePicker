@@ -16,6 +16,8 @@ class ViewController: UIViewController {
     private let pushButtonWithCustomNavigationBar = Button(type: .custom)
     private let presentButton = Button(type: .custom)
     private let presentButtonWithCustomNavigationBar = Button(type: .custom)
+    private let takePhotoButton = Button(type: .custom)
+
     
     private var data: CPFImagePicker.AlbumData?
     
@@ -23,7 +25,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let stackView = UIStackView(arrangedSubviews: [pushButton, pushButtonWithCustomNavigationBar, presentButton, presentButtonWithCustomNavigationBar]).then {
+        let stackView = UIStackView(arrangedSubviews: [pushButton, pushButtonWithCustomNavigationBar, presentButton, presentButtonWithCustomNavigationBar, takePhotoButton]).then {
             $0.axis = .vertical
             $0.alignment = .fill
             $0.distribution = .fillEqually
@@ -59,6 +61,7 @@ class ViewController: UIViewController {
         pushButtonWithCustomNavigationBar.setTitle("Push(自定义导航栏)", for: .normal)
         presentButton.setTitle("Present", for: .normal)
         presentButtonWithCustomNavigationBar.setTitle("Present(自定义导航栏)", for: .normal)
+        takePhotoButton.setTitle("拍照", for: .normal)
     }
     
     @objc private func buttonTapped(_ button: UIButton) {
@@ -261,6 +264,89 @@ class ViewController: UIViewController {
                     
                 }
             )
+        } else if button === takePhotoButton {
+            Util.requestCameraAuthorization { status in
+                guard status else { return }
+                
+                let controller = UIImagePickerController()
+                controller.allowsEditing = false
+                controller.sourceType = .camera
+                controller.delegate = self
+                Util.topController?.present(controller, animated: true, completion: nil)
+            }
         }
+    }
+}
+
+extension ViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
+    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        guard let image = info[.originalImage] as? UIImage else {
+            let alertController = UIAlertController(title: "拍照失败", message: nil, preferredStyle: .alert).then {
+                $0.addAction(UIAlertAction(title: "知道了", style: .cancel))
+            }
+            Util.topController?.present(alertController, animated: true)
+            picker.dismiss(animated: true, completion: nil)
+            return
+        }
+        
+        picker.dismiss(animated: true, completion: { [weak self] in
+            guard let self = self else { return }
+            
+            CPFImagePicker.Router.showImagePicker(
+                controller: CustomImagePickerViewController.self,
+                photoTaken: image,
+                authorizing: { status in
+                    switch status {
+                    case .authorized, .limited:
+                        break
+                    default:
+                        //showAuthAlert()
+                        break
+                    }
+                },
+                configure: { config in
+                    config.dismissWhenCompleted = false
+                    config.preferNavigateMode = .modal
+                    
+                    //config.displaySystemNavigationBar = true
+                    
+                    config.photo.maxSelectableCount = 20
+                    config.photo.cell.displaySelectedIconIndex = true
+                },
+                completion: { [weak self] data, picker in
+                    guard let self = self else { return }
+                    guard let data = data else { return }
+                    if self.data !== data {
+                        self.data = data
+                    }
+                    
+                    func showDetail() {
+                        let testController = UIViewController().then {
+                            $0.view.backgroundColor = .green
+                        }
+                        if let navigationController = picker?.navigationController, case .push = data.config.displayNavigateMode {
+                            var controllers = navigationController.viewControllers
+                            controllers.removeLast()
+                            controllers.append(testController)
+                            navigationController.setViewControllers(controllers, animated: true)
+                        } else {
+                            Util.topController?.present(testController, animated: true)
+                        }
+                    }
+                    
+                    if !data.config.dismissWhenCompleted {
+                        picker?.dismissPicker(animated: true, completion: {
+                            showDetail()
+                        })
+                    } else {
+                        showDetail()
+                    }
+                }
+            )
+        })
     }
 }

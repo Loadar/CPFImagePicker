@@ -7,12 +7,15 @@ public struct Router {
     /// 展示照片选择器
     /// - Parameters:
     ///   - data: 状态数据，默认为nil
+    ///   - controller: 处理照片数据的Controller
+    ///   - photoTaken: 展示相册前拍摄的照片数据
     ///   - authorizing: 相册授权回调，由调用者根据情况处理
     ///   - configure: 配置，若不指定，则使用状态数据内的配置
     ///   - completion: 完成回调
     public static func showImagePicker<T: UIViewController & AnyCPFImagePickerViewController>(
         with data: AlbumData? = nil,
         controller: T.Type,
+        photoTaken: UIImage? = nil,
         authorizing: @escaping (PHAuthorizationStatus) -> Void,
         configure: ((inout Config) -> Void)? = nil,
         completion: @escaping (AlbumData?, T?) -> Void
@@ -27,6 +30,7 @@ public struct Router {
                 } else {
                     finalData = DataManager.shared.newData(of: Config())
                 }
+                finalData.photoTaken = photoTaken
                 configure?(&finalData.config)
                 
                 let navigationController = CPFUIKit.Util.topController(findChild: true)?.navigationController
