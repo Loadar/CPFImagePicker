@@ -90,9 +90,25 @@ extension Config.Photo {
         public var displaySelectedIcon: UIImage? {
             displaySelectedIconIndex ? selectedBackgroundIcon : selectedIcon
         }
-        /// 选中图片是否展示序号
-        public var displaySelectedIconIndex = false
         
+        /// 选中照片是否展示序号(内部使用)
+        private var _displaySelectedIconIndex = false
+        
+        /// 选中照片是否展示序号，默认false
+        public var displaySelectedIconIndex: Bool {
+            get {
+                _displaySelectedIconIndex
+            }
+            set {
+                guard selectedDisplayStyleChangeEnabled else {
+                    debugPrint("selectedDisplayStyleChangeEnabled为false，displaySelectedIconIndex设置失败")
+                    return
+                }
+                _displaySelectedIconIndex = newValue
+            }
+        }
+        /// 是否允许切换照片选中状态展示样式
+        public var selectedDisplayStyleChangeEnabled = true
         
         /// 无法选中蒙层颜色，默认.white, 40%alpha
         public var maskColor: UIColor = .white.withAlphaComponent(0.4)
