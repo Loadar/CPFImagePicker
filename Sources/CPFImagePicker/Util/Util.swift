@@ -280,7 +280,7 @@ extension Util {
         
         let options = PHImageRequestOptions().then {
             $0.resizeMode = .fast
-            if pixelWidth > 300 {
+            if pixelWidth > 800 {
                 $0.isNetworkAccessAllowed = true
             }
         }
