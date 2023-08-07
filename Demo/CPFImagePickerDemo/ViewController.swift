@@ -201,6 +201,7 @@ class ViewController: UIViewController {
                     configure: {
                         $0.appearance.displaySystemNavigationBar = false
                         $0.photo.maxSelectableCount = 3
+                        //$0.photo.takePhotoEnabled = false
                     },
                     completion: { _, _ in
                         
@@ -217,8 +218,9 @@ class ViewController: UIViewController {
                             showAuthAlert()
                         }
                     },
-                    configure: { _ in
+                    configure: {
                         //config.displaySystemNavigationBar = false
+                        $0.photo.takePhotoEnabled = false
                     },
                     completion: { [weak self] data, _ in
                         guard let data = data else { return }

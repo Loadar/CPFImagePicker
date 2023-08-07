@@ -16,13 +16,25 @@ open class PhotoListViewController<Cell>: UIViewController,
                                           UINavigationControllerDelegate,
                                           AnyCPFDataObserver
                                           where Cell: UICollectionViewCell & AnyCPFPhotoCell {
-    private enum Item {
+    private enum Item: Equatable {
         /// 照片
         case photo(Photo)
         /// 添加照片
         case add
         /// 拍照
         case takePhoto
+        
+        static func ==(lhs: Self, rhs: Self) -> Bool {
+            switch (lhs, rhs) {
+            case (.add, .add),
+                (.takePhoto, .takePhoto):
+                return true
+            case let (.photo(first), .photo(second)):
+                return first == second
+            default:
+                return false
+            }
+        }
     }
     
     /// 列表
@@ -192,16 +204,21 @@ open class PhotoListViewController<Cell>: UIViewController,
         
         let photos = DataManager.shared.photos(of: album, fetchIfNeeded: true)
         var displayItems = photos.map { Item.photo($0) }
-        if case .limited = Util.currentAlbumAuthorizationStatus() {
-            // 仅允许选择的照片展示时，允许重新添加照片
-            displayItems.append(.add)
-        }
         
         if data.config.photo.takePhotoEnabled {
             // 允许拍照时，展示拍照选项，这里不校验权限，点击的时候才校验
             // 非智能相册才支持拍照添加照片
             if let album = data.album, album.isCameraRoll || (album.collection.assetCollectionType == .album) {
                 displayItems.insert(.takePhoto, at: 0)
+            }
+        }
+        
+        if case .limited = Util.currentAlbumAuthorizationStatus() {
+            // 仅允许选择的照片展示时，允许重新添加照片
+            if let index = displayItems.firstIndex(of: .takePhoto) {
+                displayItems.insert(.add, at: index + 1)
+            } else {
+                displayItems.insert(.add, at: 0)
             }
         }
         
