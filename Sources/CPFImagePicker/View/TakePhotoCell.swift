@@ -40,10 +40,18 @@ open class TakePhotoCell: UICollectionViewCell {
         iconView.translatesAutoresizingMaskIntoConstraints = false
         infoLabel.translatesAutoresizingMaskIntoConstraints = false
         
+        let layoutGuide = UILayoutGuide().then {
+            contentView.addLayoutGuide($0)
+            let constraints: [NSLayoutConstraint] = [
+                $0.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+                $0.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+            ]
+            contentView.addConstraints(constraints)
+        }
         iconView.do {
             let constraints: [NSLayoutConstraint] = [
-                $0.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 40),
-                $0.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+                $0.topAnchor.constraint(equalTo: layoutGuide.topAnchor),
+                $0.centerXAnchor.constraint(equalTo: layoutGuide.centerXAnchor),
                 $0.widthAnchor.constraint(equalToConstant: 32),
                 $0.heightAnchor.constraint(equalToConstant: 32)
             ]
@@ -52,7 +60,9 @@ open class TakePhotoCell: UICollectionViewCell {
         infoLabel.do {
             let constraints: [NSLayoutConstraint] = [
                 $0.topAnchor.constraint(equalTo: iconView.bottomAnchor, constant: 8),
-                $0.centerXAnchor.constraint(equalTo: iconView.centerXAnchor)
+                $0.centerXAnchor.constraint(equalTo: layoutGuide.centerXAnchor),
+                $0.widthAnchor.constraint(equalTo: layoutGuide.widthAnchor),
+                $0.bottomAnchor.constraint(equalTo: layoutGuide.bottomAnchor)
             ]
             contentView.addConstraints(constraints)
         }

@@ -239,6 +239,18 @@ open class PhotoListViewController<Cell>: UIViewController,
         self.collectionView.reloadData()
     }
     
+    open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        
+        collectionView.collectionViewLayout = data.config.photo.list.layoutProvider()
+        
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        collectionView.collectionViewLayout.invalidateLayout()
+        collectionView.reloadData()
+        CATransaction.commit()
+    }
+    
     // MARK: - UIImagePickerControllerDelegate
     public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
