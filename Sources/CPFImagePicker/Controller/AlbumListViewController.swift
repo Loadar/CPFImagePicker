@@ -126,6 +126,14 @@ open class AlbumListViewController<Cell: UITableViewCell & AnyCPFAlbumCell>: UIV
         }
     }
     
+    open override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        if let constraint = view.constraints.first(where: { $0.firstAnchor === tableView.heightAnchor }), constraint.constant != contentHeight {
+            constraint.constant = contentHeight
+        }
+    }
+    
     // MARK: - Actions
     @objc private func backgroundTapped() {
         backgroundView.cpfThrottler().run { [weak self] in

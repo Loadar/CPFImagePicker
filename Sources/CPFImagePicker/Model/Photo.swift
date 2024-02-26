@@ -21,6 +21,15 @@ public struct Photo {
         let width = defaultConfig.photo.list.layoutProvider().itemSize.width
         return ImageManager.shared.thumbnail(of: self, width: width)
     }
+    /// 获取缩略图，不存在时直接生成
+    public func fetchThumbnail(keepImageSizeRatio: Bool = false, _ completion: @escaping (UIImage) -> Void) {
+        let defaultConfig = Config()
+        let width = defaultConfig.photo.list.layoutProvider().itemSize.width
+
+        ImageManager.shared.fetchThumbnail(of: asset, width: width, keepImageSizeRatio: keepImageSizeRatio, responseOnceForSameRequest: true, completion: { image, _ in
+            completion(image)
+        })
+    }
     
     /// 通过asset及照片类型初始化
     public init(asset: PHAsset, type: PhotoType) {

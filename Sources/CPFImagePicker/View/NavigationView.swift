@@ -134,7 +134,7 @@ open class NavigationView: UIView {
     }
     
     open override var intrinsicContentSize: CGSize {
-        CGSize(width: UIScreen.main.bounds.width, height: 44)
+        CGSize(width: -1, height: 44)
     }
     
     func updateNextButton(with selectedPhotoCount: Int, enabled: Bool = true) {

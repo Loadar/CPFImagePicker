@@ -29,7 +29,7 @@ extension Config.Album {
         /// 内容边距，默认top: 10
         public var contentInset: UIEdgeInsets = UIEdgeInsets(top: 10, left: 0, bottom: 0, right: 0)
         /// 内容最大高度，默认为屏幕高度的2/3
-        public var maxContentHeight: CGFloat = UIScreen.main.bounds.height * 2.0 / 3.0
+        public var maxContentHeight: CGFloat { UIScreen.main.bounds.height * 2.0 / 3.0 }
     }
 }
 
