@@ -12,7 +12,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/devxoul/Then", from: Version("3.0.0")),
-        .package(url: "https://github.com/Loadar/CPFUIKit.git", from: Version("0.2.0")),
+        .package(url: "https://github.com/Loadar/CPFUIKit.git", from: Version("0.2.3")),
     ],
     targets: [
         .target(
@@ -26,10 +26,12 @@ let package = Package(
                 .process("Resources/selectedBackground.png"),
                 .process("Resources/add.png"),
                 .process("Resources/camera.png"),
+                .copy("../PrivacyInfo.xcprivacy")
             ]
         ),
         .testTarget(
             name: "CPFImagePickerTests",
-            dependencies: ["CPFImagePicker"]),
+            dependencies: ["CPFImagePicker"]
+        ),
     ]
 )
