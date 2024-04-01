@@ -16,12 +16,15 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/devxoul/Then", from: Version("3.0.0")),
-        .package(url: "https://github.com/Loadar/CPFUIKit.git", from: Version("0.2.3")),
+        .package(url: "https://github.com/Loadar/CPFUIKit.git", from: Version("0.2.4")),
     ],
     targets: [
         .target(
             name: "CPFImagePicker",
-            dependencies: ["Then", "CPFUIKit"],
+            dependencies: [
+                "Then",
+                .product(name: "CPFUIKitDynamic", package: "CPFUIKit")
+            ],
             resources: [
                 .process("Resources/back.png"),
                 .process("Resources/popUp.png"),
@@ -29,8 +32,7 @@ let package = Package(
                 .process("Resources/selected.png"),
                 .process("Resources/selectedBackground.png"),
                 .process("Resources/add.png"),
-                .process("Resources/camera.png"),
-                .copy("../PrivacyInfo.xcprivacy")
+                .process("Resources/camera.png")
             ]
         ),
         .testTarget(
