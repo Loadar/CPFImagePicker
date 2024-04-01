@@ -9,6 +9,10 @@ let package = Package(
         .library(
             name: "CPFImagePicker",
             targets: ["CPFImagePicker"]),
+        .library(
+            name: "CPFImagePickerDynamic",
+            type: .dynamic,
+            targets: ["CPFImagePicker"]),
     ],
     dependencies: [
         .package(url: "https://github.com/devxoul/Then", from: Version("3.0.0")),
