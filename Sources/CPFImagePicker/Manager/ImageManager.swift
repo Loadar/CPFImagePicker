@@ -80,7 +80,14 @@ extension ImageManager {
 
 extension ImageManager {
     func cancelTask(with id: String) {
-        guard let task = thumbnailTasks.first(where: { $0.id == id }) else { return }
+        guard var index = thumbnailTasks.firstIndex(where: { $0.id == id }) else { return }
+        var task = thumbnailTasks[index]
+        task.referenceCount -= 1
+        guard task.referenceCount <= 0 else {
+            thumbnailTasks[index] = task
+            return
+        }
+        
         if let requestId = task.requestId {
             PHImageManager.default().cancelImageRequest(requestId)
         }
@@ -106,6 +113,9 @@ extension ImageManager {
         /// 请求id
         var requestId: PHImageRequestID?
         
+        /// 引用计数
+        var referenceCount = 0
+        
         init(asset: PHAsset, width: CGFloat, keepImageSizeRatio: Bool, completion: @escaping (UIImage, PHAsset) -> Void) {
             self.id = Self.id(of: asset, width: width, keepImageSizeRatio: keepImageSizeRatio)
             self.asset = asset
@@ -113,6 +123,7 @@ extension ImageManager {
             self.keepImageSizeRatio = keepImageSizeRatio
             self.completions = [completion]
             self.createDate = Date()
+            self.referenceCount = 1
         }
         
         static func id(of asset: PHAsset, width: CGFloat, keepImageSizeRatio: Bool) -> String {
@@ -121,6 +132,7 @@ extension ImageManager {
         
         mutating func addCompletion(_ completion: @escaping (UIImage, PHAsset) -> Void) {
             completions.append(completion)
+            referenceCount += 1
         }
     }
 }

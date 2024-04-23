@@ -7,6 +7,7 @@
 
 import UIKit
 import PhotosUI
+import DeepDiff
 
 /// 照片列表
 open class PhotoListViewController<Cell>: UIViewController,
@@ -16,7 +17,7 @@ open class PhotoListViewController<Cell>: UIViewController,
                                           UINavigationControllerDelegate,
                                           AnyCPFDataObserver
                                           where Cell: UICollectionViewCell & AnyCPFPhotoCell {
-    private enum Item: Equatable {
+    private enum Item: Equatable, DiffAware {
         /// 照片
         case photo(Photo)
         /// 添加照片
@@ -35,6 +36,19 @@ open class PhotoListViewController<Cell>: UIViewController,
                 return false
             }
         }
+        
+        var diffId: String {
+            switch self {
+            case .photo(let photo): photo.asset.localIdentifier
+            case .add: "add"
+            case .takePhoto: "takePhoto"
+            }
+        }
+        
+        static func compareContent(_ a: PhotoListViewController<Cell>.Item, _ b: PhotoListViewController<Cell>.Item) -> Bool {
+            a == b
+        }
+
     }
     
     /// 列表
@@ -190,12 +204,20 @@ open class PhotoListViewController<Cell>: UIViewController,
         guard let album = data.album else { return }
         
         let indexPathes = collectionView.indexPathsForVisibleItems.sorted(by: { $0.item < $1.item })
-        guard let maxIndex = indexPathes.last?.item else { return }
+        guard var maxIndex = indexPathes.last?.item else { return }
+        
+        if displayItems.contains(.add) {
+            maxIndex -= 1
+        }
+        if displayItems.contains(.takePhoto) {
+            maxIndex -= 1
+        }
         
         let pageSize = DataManager.photoListPageSize
         let page = maxIndex / pageSize
-        
-        if maxIndex % pageSize > pageSize / 2, !DataManager.shared.isPhotosFetchedCompleted(of: album) {
+        if maxIndex % pageSize > pageSize / 2,
+           !DataManager.shared.isPhotosFetchedCompleted(of: album),
+           !DataManager.shared.isPhotosFetched(of: album, page: page + 1) {
             // 超过当前页一半时，获取下一页的数据
             let _ = DataManager.shared.photos(of: album, page: page + 1, fetchIfNeeded: true)
         }
@@ -216,44 +238,47 @@ open class PhotoListViewController<Cell>: UIViewController,
     
     func reloadPhotos() {
         guard let album = data.album else { return }
+        let oldDisplayItems = displayItems
         
         let photos = DataManager.shared.photos(of: album, page: 0, fetchIfNeeded: true) ?? []
-        //DispatchQueue.global().async {
-            var displayItems = photos.map { Item.photo($0) }
+        var displayItems = photos.map { Item.photo($0) }
+        
+        if self.data.config.photo.takePhotoEnabled {
+            // 允许拍照时，展示拍照选项，这里不校验权限，点击的时候才校验
+            // 非智能相册才支持拍照添加照片
+            if let album = self.data.album, album.isCameraRoll || (album.collection.assetCollectionType == .album) {
+                displayItems.insert(.takePhoto, at: 0)
+            }
+        }
+        if case .limited = Util.currentAlbumAuthorizationStatus() {
+            // 仅允许选择的照片展示时，允许重新添加照片
+            if let index = displayItems.firstIndex(of: .takePhoto) {
+                displayItems.insert(.add, at: index + 1)
+            } else {
+                displayItems.insert(.add, at: 0)
+            }
+        }
+        //self.displayItems = displayItems
+        
+        if let newAddedPhotoId = self.newAddedPhotoId {
+            if let photo = photos.first(where: { $0.asset.localIdentifier == newAddedPhotoId }), !self.data.isSelected(of: photo) {
+                if self.data.selectedPhotos.count >= self.data.config.photo.maxSelectableCount {
+                    self.data.config.photo.tryToSelectPhotoBeyondMaxCount?(self.data.config)
+                } else {
+                    self.data.add(photo: photo)
+                }
+            }
             
-            //DispatchQueue.main.async {
-                if self.data.config.photo.takePhotoEnabled {
-                    // 允许拍照时，展示拍照选项，这里不校验权限，点击的时候才校验
-                    // 非智能相册才支持拍照添加照片
-                    if let album = self.data.album, album.isCameraRoll || (album.collection.assetCollectionType == .album) {
-                        displayItems.insert(.takePhoto, at: 0)
-                    }
-                }
-                if case .limited = Util.currentAlbumAuthorizationStatus() {
-                    // 仅允许选择的照片展示时，允许重新添加照片
-                    if let index = displayItems.firstIndex(of: .takePhoto) {
-                        displayItems.insert(.add, at: index + 1)
-                    } else {
-                        displayItems.insert(.add, at: 0)
-                    }
-                }
-                self.displayItems = displayItems
-
-                if let newAddedPhotoId = self.newAddedPhotoId {
-                    if let photo = photos.first(where: { $0.asset.localIdentifier == newAddedPhotoId }), !self.data.isSelected(of: photo) {
-                        if self.data.selectedPhotos.count >= self.data.config.photo.maxSelectableCount {
-                            self.data.config.photo.tryToSelectPhotoBeyondMaxCount?(self.data.config)
-                        } else {
-                            self.data.add(photo: photo)
-                        }
-                    }
-                    
-                    self.newAddedPhotoId = nil
-                }
-
-                self.collectionView.reloadData()
-            //}
-        //}
+            self.newAddedPhotoId = nil
+        }
+        
+        //self.collectionView.reloadData()
+        
+        // 差异化更新
+        let changes = diff(old: oldDisplayItems, new: displayItems)
+        collectionView.reload(changes: changes) {
+            self.displayItems = displayItems
+        }
     }
     
     open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -305,6 +330,16 @@ open class PhotoListViewController<Cell>: UIViewController,
     }
     
     public func selectedPhotosDidChanged() {
-        collectionView.reloadData()
+//        collectionView.reloadData()
+        collectionView.indexPathsForVisibleItems.forEach {
+            guard let cell = collectionView.cellForItem(at: $0) as? Cell else { return }
+            guard (0..<displayItems.count).contains($0.item) else { return }
+            guard case .photo(let photo) = displayItems[$0.item] else { return }
+            var selectedIndex = -1
+            if let index = data.selectedIndex(of: photo) {
+                selectedIndex = index
+            }
+            cell.update(selectedState: selectedIndex >= 0, selectedIndex: selectedIndex)
+        }
     }
 }

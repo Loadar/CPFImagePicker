@@ -20,7 +20,7 @@ final class DataManager: NSObject {
     /// 相册列表
     private(set) var albums = [Album]() {
         didSet {
-            self.photoInfo.removeAll()
+            //self.photoInfo.removeAll()
             albumFetched = true
             
             observers
@@ -80,7 +80,7 @@ extension DataManager {
     /// 获取指定相册下的照片列表
     /// - Parameters:
     ///   - album: 相册
-    ///   - page: 分页，用于确定是否获取更多数据
+    ///   - page: 分页，用于确定是否获取更多数据， 从0开始
     ///   - fetchIfNeeded: 当缓存中无数据时，是否从图片库中获取
     /// - Returns: 返回此相册下已获取的所有照片
     func photos(of album: Album, page: Int, fetchIfNeeded: Bool) -> [Photo]? {
@@ -89,21 +89,17 @@ extension DataManager {
             if fetchedPage + 1 == page, photoFetchingPageInfo[album] == nil {
                 photoFetchingPageInfo[album] = page
                 Util.assets(of: album, page: page, pageSize: Self.photoListPageSize) { assets in
-                   // DispatchQueue.global().async {
-                        let photos = assets.compactMap {
-                            Photo(asset: $0)
-                        }
-
-                        //DispatchQueue.main.async {
-                            var allPhotos = self.photoInfo[album]?.photos ?? []
-                            allPhotos.append(contentsOf: photos)
-                            self.photoInfo[album] = (page, photos.isEmpty, allPhotos)
-                            self.observers
-                                .compactMap { $0.weakObject as? AnyCPFImagePickerObserver }
-                                .forEach { $0.photoListDidChanged(of: album) }
-                            self.photoFetchingPageInfo[album] = nil
-                        //}
-                    //}
+                    let photos = assets.compactMap {
+                        Photo(asset: $0)
+                    }
+                    
+                    var allPhotos = self.photoInfo[album]?.photos ?? []
+                    allPhotos.append(contentsOf: photos)
+                    self.photoInfo[album] = (page, photos.isEmpty, allPhotos)
+                    self.photoFetchingPageInfo[album] = nil
+                    self.observers
+                        .compactMap { $0.weakObject as? AnyCPFImagePickerObserver }
+                        .forEach { $0.photoListDidChanged(of: album) }
                 }
             }
         }
@@ -114,6 +110,10 @@ extension DataManager {
     func isPhotosFetchedCompleted(of album: Album) -> Bool {
         guard let info = photoInfo[album] else { return false }
         return info.fetchCompleted
+    }
+    func isPhotosFetched(of album: Album, page: Int) -> Bool {
+        guard let info = photoInfo[album] else { return false }
+        return info.page >= page
     }
 }
 
@@ -163,7 +163,7 @@ extension DataManager: PHPhotoLibraryChangeObserver {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.albumRequiredRefresh = true
-            self.photoInfo.removeAll()
+//            self.photoInfo.removeAll()
             self.compactData()
             
             if !self.displayDatas.isEmpty {

@@ -58,10 +58,27 @@ extension Util {
         DispatchQueue.global().async {
             debugPrint("begin:", Date())
             var finalAlbums = [Album]()
+            
+            func checkCameraRoll() {
+                if let index = finalAlbums.firstIndex(where: { $0.isCameraRoll }), index > 0 {
+                    let cameraRollAlbum = finalAlbums.remove(at: index)
+                    finalAlbums.insert(cameraRollAlbum, at: 0)
+                }
+            }
+            
             let smartAlbumResult = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .any, options: nil)
             for album in self.albums(of: smartAlbumResult) {
                 if !finalAlbums.contains(where: { $0.collection == album.collection }) {
                     finalAlbums.append(album)
+                    
+                    if !DataManager.shared.albumFetched, finalAlbums.contains(where: { $0.isCameraRoll }) {
+                        checkCameraRoll()
+                        DispatchQueue.main.async {
+                            debugPrint("quick display:", Date())
+
+                            completion(finalAlbums)
+                        }
+                    }
                 }
             }
             
@@ -69,13 +86,18 @@ extension Util {
             for album in self.albums(of: syncedAlbumResult) {
                 if !finalAlbums.contains(where: { $0.collection == album.collection }) {
                     finalAlbums.append(album)
+                    if !DataManager.shared.albumFetched, finalAlbums.contains(where: { $0.isCameraRoll }) {
+                        checkCameraRoll()
+                        DispatchQueue.main.async {
+                            debugPrint("quick display:", Date())
+
+                            completion(finalAlbums)
+                        }
+                    }
                 }
             }
             
-            if let index = finalAlbums.firstIndex(where: { $0.isCameraRoll }) {
-                let cameraRollAlbum = finalAlbums.remove(at: index)
-                finalAlbums.insert(cameraRollAlbum, at: 0)
-            }
+            checkCameraRoll()
             
             DispatchQueue.main.async {
                 debugPrint("after:", Date())
@@ -159,15 +181,11 @@ extension Util {
     /// 获取指定相册的照片assert列表
     /// - Parameters:
     ///   - album: 相册
-    ///   - page: 分页
+    ///   - page: 分页， 从0开始
     ///   - pageSize: 分页大小
     ///   - completion: 完成回调
     public static func assets(of album: Album, page: Int, pageSize: Int, completion: @escaping ([PHAsset]) -> Void) {
         let assetResult = album.assetResult
-        debugPrint("begin album: \(album.collection.localIdentifier), page: \(page)", Date())
-        defer {
-            debugPrint("end album: \(album.collection.localIdentifier), page: \(page)", Date())
-        }
         
         // 无图片
         if assetResult.countOfAssets(with: .image) <= 0 {
@@ -175,8 +193,7 @@ extension Util {
             return
         }
         
-       // DispatchQueue.global().async {
-            var assets = [PHAsset]()
+        var assets = [PHAsset]()
         let from = page * pageSize
         var to = (page + 1) * pageSize
         let count = assetResult.count
@@ -187,15 +204,9 @@ extension Util {
         if to > count {
             to = count
         }
-            let indexSet = IndexSet(integersIn: from..<to)
+        let indexSet = IndexSet(integersIn: from..<to)
         assets = assetResult.objects(at: indexSet)
-//            assetResult.enumerateObjects(at: indexSet) { asset, _, _ in
-//                assets.append(asset)
-//            }
-            //DispatchQueue.main.async {
-                completion(assets)
-            //}
-        //}
+        completion(assets)
     }
 }
 
@@ -308,9 +319,7 @@ extension Util {
         
         let options = PHImageRequestOptions().then {
             $0.resizeMode = .fast
-            if pixelWidth > 800 {
-                $0.isNetworkAccessAllowed = true
-            }
+            $0.isNetworkAccessAllowed = true
         }
         return PHImageManager.default().requestImage(for: asset, targetSize: imageSize, contentMode: .aspectFill, options: options) { image, info in
             guard let image = image else { return }

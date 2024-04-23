@@ -187,6 +187,9 @@ open class AlbumListViewController<Cell: UITableViewCell & AnyCPFAlbumCell>: UIV
     
     // MARK: - AnyCPFImagePickerObserver
     func albumListDidChanged() {
+        if let constraint = view.constraints.first(where: { $0.firstAnchor === tableView.heightAnchor }), constraint.constant != contentHeight {
+            constraint.constant = contentHeight
+        }
         tableView.reloadData()
     }
     
