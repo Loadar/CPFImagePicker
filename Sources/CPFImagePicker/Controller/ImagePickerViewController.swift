@@ -20,7 +20,9 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
     public private(set) var albumController: AlbumListViewController<AlbumCell>?
     /// 照片
     public let photoController: PhotoListViewController<PhotoCell>
-    
+    /// 活动指示器
+    private var activityView: UIActivityIndicatorView?
+
     /// 完成回调
     public var completion: ((AlbumData?, Bool) -> Void)?
     
@@ -47,6 +49,24 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
         
         if !DataManager.shared.refreshAlbumDataIfNeeded() {
             albumListDidChanged()
+        }
+    }
+    
+    open override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if !DataManager.shared.albumFetched {
+            let activityView = UIActivityIndicatorView(style: .whiteLarge)
+            self.activityView = activityView
+            view.addSubview(activityView)
+            
+            activityView.bounds = CGRect(origin: .zero, size: CGSize(width: 44, height: 44))
+            activityView.center = view.center
+            activityView.autoresizingMask = [.flexibleLeftMargin, .flexibleRightMargin, .flexibleTopMargin, .flexibleBottomMargin]
+            
+            activityView.hidesWhenStopped = true
+            activityView.color = Util.color(with: 0x2f54eb)
+            activityView.startAnimating()
         }
     }
     
@@ -107,6 +127,7 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
         navigationView.do {
             $0.backgroundColor = .white
             $0.isHidden = data.config.appearance.displaySystemNavigationBar
+            $0.nextButton.isHidden = data.album == nil
         }
         if !data.config.appearance.displaySystemNavigationBar {
             let backgroundView = UIView()
@@ -225,10 +246,13 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
                             } else {
                                 self.navigationView.titleButton.imageView?.transform = .identity
                             }
+                            if let newAlbum = newAlbum {
+                                self.navigationView.titleButton.setTitle(newAlbum.name, for: .normal)
+                            }
+                        }, completion: { _ in
+                            guard let newAlbum = newAlbum, newAlbum != self.data.album else { return }
+                            self.data.album = newAlbum
                         })
-                        
-                        guard let newAlbum = newAlbum, newAlbum != self.data.album else { return }
-                        self.data.album = newAlbum
                     }
                 }
                 
@@ -258,6 +282,7 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
     // MARK: - AnyCPFDataObserver
     open func selectedAlbumDidChanged() {
         updateTitle()
+        navigationView.nextButton.isHidden = data.album == nil
     }
     
     open func selectedPhotosDidChanged() {
@@ -266,6 +291,8 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
     
     // MARK: - AnyCPFImagePickerObserver
     func albumListDidChanged() {
+        activityView?.stopAnimating()
+
         let albums = DataManager.shared.albums
         
         // 当前未选中相册或已选中相册不存在时，默认选中第一个相册
@@ -281,5 +308,10 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
             debugPrint("**** 无可用相册 ****")
         }
     }
+    
+    func photoListDidChanged(of album: Album) {
+        guard album == data.album else { return }
+        guard let _ = DataManager.shared.photos(of: album, page: 0, fetchIfNeeded: false) else { return }
+        photoController.reloadPhotos()
+    }
 }
-

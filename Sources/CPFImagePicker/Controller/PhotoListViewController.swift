@@ -186,6 +186,21 @@ open class PhotoListViewController<Cell>: UIViewController,
         }
     }
     
+    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard let album = data.album else { return }
+        
+        let indexPathes = collectionView.indexPathsForVisibleItems.sorted(by: { $0.item < $1.item })
+        guard let maxIndex = indexPathes.last?.item else { return }
+        
+        let pageSize = DataManager.photoListPageSize
+        let page = maxIndex / pageSize
+        
+        if maxIndex % pageSize > pageSize / 2, !DataManager.shared.isPhotosFetchedCompleted(of: album) {
+            // 超过当前页一半时，获取下一页的数据
+            let _ = DataManager.shared.photos(of: album, page: page + 1, fetchIfNeeded: true)
+        }
+    }
+    
     private func photo(at indexPath: IndexPath) -> Photo? {
         item(at: indexPath).flatMap {
             switch $0 {
@@ -199,44 +214,46 @@ open class PhotoListViewController<Cell>: UIViewController,
         return displayItems[indexPath.item]
     }
     
-    private func reloadPhotos() {
+    func reloadPhotos() {
         guard let album = data.album else { return }
         
-        let photos = DataManager.shared.photos(of: album, fetchIfNeeded: true)
-        var displayItems = photos.map { Item.photo($0) }
-        
-        if data.config.photo.takePhotoEnabled {
-            // 允许拍照时，展示拍照选项，这里不校验权限，点击的时候才校验
-            // 非智能相册才支持拍照添加照片
-            if let album = data.album, album.isCameraRoll || (album.collection.assetCollectionType == .album) {
-                displayItems.insert(.takePhoto, at: 0)
-            }
-        }
-        
-        if case .limited = Util.currentAlbumAuthorizationStatus() {
-            // 仅允许选择的照片展示时，允许重新添加照片
-            if let index = displayItems.firstIndex(of: .takePhoto) {
-                displayItems.insert(.add, at: index + 1)
-            } else {
-                displayItems.insert(.add, at: 0)
-            }
-        }
-        
-        self.displayItems = displayItems
-        
-        if let newAddedPhotoId = newAddedPhotoId {
-            if let photo = photos.first(where: { $0.asset.localIdentifier == newAddedPhotoId }), !data.isSelected(of: photo) {
-                if data.selectedPhotos.count >= data.config.photo.maxSelectableCount {
-                    data.config.photo.tryToSelectPhotoBeyondMaxCount?(data.config)
-                } else {
-                    data.add(photo: photo)
-                }
-            }
+        let photos = DataManager.shared.photos(of: album, page: 0, fetchIfNeeded: true) ?? []
+        //DispatchQueue.global().async {
+            var displayItems = photos.map { Item.photo($0) }
             
-            self.newAddedPhotoId = nil
-        }
-        
-        self.collectionView.reloadData()
+            //DispatchQueue.main.async {
+                if self.data.config.photo.takePhotoEnabled {
+                    // 允许拍照时，展示拍照选项，这里不校验权限，点击的时候才校验
+                    // 非智能相册才支持拍照添加照片
+                    if let album = self.data.album, album.isCameraRoll || (album.collection.assetCollectionType == .album) {
+                        displayItems.insert(.takePhoto, at: 0)
+                    }
+                }
+                if case .limited = Util.currentAlbumAuthorizationStatus() {
+                    // 仅允许选择的照片展示时，允许重新添加照片
+                    if let index = displayItems.firstIndex(of: .takePhoto) {
+                        displayItems.insert(.add, at: index + 1)
+                    } else {
+                        displayItems.insert(.add, at: 0)
+                    }
+                }
+                self.displayItems = displayItems
+
+                if let newAddedPhotoId = self.newAddedPhotoId {
+                    if let photo = photos.first(where: { $0.asset.localIdentifier == newAddedPhotoId }), !self.data.isSelected(of: photo) {
+                        if self.data.selectedPhotos.count >= self.data.config.photo.maxSelectableCount {
+                            self.data.config.photo.tryToSelectPhotoBeyondMaxCount?(self.data.config)
+                        } else {
+                            self.data.add(photo: photo)
+                        }
+                    }
+                    
+                    self.newAddedPhotoId = nil
+                }
+
+                self.collectionView.reloadData()
+            //}
+        //}
     }
     
     open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {

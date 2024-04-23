@@ -232,8 +232,8 @@ open class AlbumListViewController<Cell: UITableViewCell & AnyCPFAlbumCell>: UIV
                 self.tableView.transform = CGAffineTransform(translationX: 0, y: self.contentHeight * -1)
                 self.backgroundView.alpha = 0
             },
-            completion: { [weak self] _ in
-                self?.view.isHidden = true
+            completion: { _ in
+                self.view.isHidden = true
             }
         )
     }

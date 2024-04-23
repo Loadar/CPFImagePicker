@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Photos
 import Then
 
 open class PhotoCell: UICollectionViewCell, AnyCPFPhotoCell {
@@ -25,6 +26,8 @@ open class PhotoCell: UICollectionViewCell, AnyCPFPhotoCell {
 
     /// 展示的照片
     private var displayPhoto: Photo?
+    /// 缩略图任务Id
+    private var thumbnailTaskId: String?
     
     // MARK: - Lifecycle
     public override init(frame: CGRect) {
@@ -120,7 +123,15 @@ open class PhotoCell: UICollectionViewCell, AnyCPFPhotoCell {
         imselectableMaskView.isHidden = isSelected || selectable
         
         self.layoutIfNeeded()
-        ImageManager.shared.fetchThumbnail(of: photo.asset, width: thumbnailView.bounds.width, keepImageSizeRatio: false) { [weak self] image, assert in
+        self.thumbnailView.image = ImageManager.shared.thumbnail(of: photo, width: thumbnailView.bounds.width)
+        
+        let width = thumbnailView.bounds.width
+        let newId = ImageManager.ThumbnailTask.id(of: photo.asset, width: width, keepImageSizeRatio: false)
+        if let oldId = thumbnailTaskId, oldId != newId {
+            ImageManager.shared.cancelTask(with: oldId)
+        }
+        thumbnailTaskId = newId
+        ImageManager.shared.fetchThumbnail(of: photo.asset, width: width, keepImageSizeRatio: false) { [weak self] image, assert in
             guard let self = self else { return }
             guard assert.localIdentifier == self.displayPhoto?.asset.localIdentifier else { return }
             self.thumbnailView.image = image

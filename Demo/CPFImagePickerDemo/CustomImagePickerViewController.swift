@@ -124,6 +124,11 @@ final class CustomImagePickerViewController: ImagePickerViewController {
         }
     }
     
+    override func selectedAlbumDidChanged() {
+        super.selectedAlbumDidChanged()
+        toolView.isHidden = data.album == nil
+    }
+    
     override func selectedPhotosDidChanged() {
         let countText: String
         if data.config.photo.cell.displaySelectedIconIndex {

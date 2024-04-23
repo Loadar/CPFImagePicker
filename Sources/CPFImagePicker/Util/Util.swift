@@ -55,27 +55,34 @@ extension Util {
 
 extension Util {
     static func fetchAlbums(completion: @escaping ([Album]) -> Void) {
-        var finalAlbums = [Album]()
-        let smartAlbumResult = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .any, options: nil)
-        for album in self.albums(of: smartAlbumResult) {
-            if !finalAlbums.contains(where: { $0.collection == album.collection }) {
-                finalAlbums.append(album)
+        DispatchQueue.global().async {
+            debugPrint("begin:", Date())
+            var finalAlbums = [Album]()
+            let smartAlbumResult = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .any, options: nil)
+            for album in self.albums(of: smartAlbumResult) {
+                if !finalAlbums.contains(where: { $0.collection == album.collection }) {
+                    finalAlbums.append(album)
+                }
+            }
+            
+            let syncedAlbumResult = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: nil)
+            for album in self.albums(of: syncedAlbumResult) {
+                if !finalAlbums.contains(where: { $0.collection == album.collection }) {
+                    finalAlbums.append(album)
+                }
+            }
+            
+            if let index = finalAlbums.firstIndex(where: { $0.isCameraRoll }) {
+                let cameraRollAlbum = finalAlbums.remove(at: index)
+                finalAlbums.insert(cameraRollAlbum, at: 0)
+            }
+            
+            DispatchQueue.main.async {
+                debugPrint("after:", Date())
+
+                completion(finalAlbums)
             }
         }
-        
-        let syncedAlbumResult = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: nil)
-        for album in self.albums(of: syncedAlbumResult) {
-            if !finalAlbums.contains(where: { $0.collection == album.collection }) {
-                finalAlbums.append(album)
-            }
-        }
-
-        if let index = finalAlbums.firstIndex(where: { $0.isCameraRoll }) {
-            let cameraRollAlbum = finalAlbums.remove(at: index)
-            finalAlbums.insert(cameraRollAlbum, at: 0)
-        }
-
-        completion(finalAlbums)
     }
     
     private static func albums(of result: PHFetchResult<PHAssetCollection>) -> [Album] {
@@ -113,6 +120,8 @@ extension Util {
             default: return false
             }
         }
+        
+        debugPrint("album begin:", Date())
 
         let isCameraRoll = isCameraRoll(of: collection)
         
@@ -135,6 +144,8 @@ extension Util {
         let coverPhoto = assetResult.firstObject.flatMap {
             Photo(asset: $0)
         }
+        debugPrint("album end:", Date())
+
         return Album(
             collection: collection,
             assetResult: assetResult,
@@ -145,29 +156,46 @@ extension Util {
         )
     }
         
-    /// 获取指定相册的照片assert
+    /// 获取指定相册的照片assert列表
     /// - Parameters:
-    ///   - collection: 相册对应的collection
-    ///   - onlyImages: 是否仅保留图片类型的数据
-    public static func assets(of collection: PHAssetCollection, onlyImages: Bool) -> [PHAsset] {
-        let option = PHFetchOptions().then {
-            if onlyImages {
-                $0.predicate = NSPredicate(format: "mediaType == %ld", PHAssetMediaType.image.rawValue)
-            }
-            $0.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+    ///   - album: 相册
+    ///   - page: 分页
+    ///   - pageSize: 分页大小
+    ///   - completion: 完成回调
+    public static func assets(of album: Album, page: Int, pageSize: Int, completion: @escaping ([PHAsset]) -> Void) {
+        let assetResult = album.assetResult
+        debugPrint("begin album: \(album.collection.localIdentifier), page: \(page)", Date())
+        defer {
+            debugPrint("end album: \(album.collection.localIdentifier), page: \(page)", Date())
         }
-        let assetResult = PHAsset.fetchAssets(in: collection, options: option)
         
         // 无图片
-        if onlyImages, assetResult.countOfAssets(with: .image) <= 0 {
-            return []
+        if assetResult.countOfAssets(with: .image) <= 0 {
+            completion([])
+            return
         }
         
-        var assets = [PHAsset]()
-        assetResult.enumerateObjects { asset, _, _ in
-            assets.append(asset)
+       // DispatchQueue.global().async {
+            var assets = [PHAsset]()
+        let from = page * pageSize
+        var to = (page + 1) * pageSize
+        let count = assetResult.count
+        if from > count - 1 {
+            completion([])
+            return
         }
-        return assets
+        if to > count {
+            to = count
+        }
+            let indexSet = IndexSet(integersIn: from..<to)
+        assets = assetResult.objects(at: indexSet)
+//            assetResult.enumerateObjects(at: indexSet) { asset, _, _ in
+//                assets.append(asset)
+//            }
+            //DispatchQueue.main.async {
+                completion(assets)
+            //}
+        //}
     }
 }
 

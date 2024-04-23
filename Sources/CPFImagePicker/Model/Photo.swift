@@ -26,7 +26,8 @@ public struct Photo {
         let defaultConfig = Config()
         let width = defaultConfig.photo.list.layoutProvider().itemSize.width
 
-        ImageManager.shared.fetchThumbnail(of: asset, width: width, keepImageSizeRatio: keepImageSizeRatio, responseOnceForSameRequest: true, completion: { image, _ in
+        ImageManager.shared.fetchThumbnail(of: asset, width: width, keepImageSizeRatio: keepImageSizeRatio, completion: { image, assert in
+            guard asset.localIdentifier == self.asset.localIdentifier else { return }
             completion(image)
         })
     }

@@ -17,10 +17,8 @@ public final class ImageManager {
     private let thumbnailCache = NSCache<NSString, UIImage>().then {
         $0.countLimit = 10000
     }
-    /// 图像请求信息
-    private var imageRequestInfo: [String: PHImageRequestID] = [:]
     /// 图像请求回调
-    private var imageRequestCompletionInfo: [String: [(UIImage, PHAsset) -> Void]] = [:]
+    private var thumbnailTasks: [ThumbnailTask] = []
 }
 
 extension ImageManager {
@@ -29,52 +27,46 @@ extension ImageManager {
     ///   - asset: 照片对应asset
     ///   - width: 图像宽度，单位为pt
     ///   - keepImageSizeRatio: 是否保持图像宽高比
-    ///   - responseOnceForSameRequest: 同样的图像请求，是否仅响应最后一次的回调，默认true
     ///   - completion: 完成回调
     func fetchThumbnail(
         of asset: PHAsset,
         width: CGFloat,
         keepImageSizeRatio: Bool,
-        responseOnceForSameRequest: Bool = true,
         completion: @escaping (UIImage, PHAsset) -> Void
     ) {
-        let key = "\(asset.localIdentifier)-\(width)-\(keepImageSizeRatio)"
-        let keyObject = key as NSString
+        var task = ThumbnailTask(asset: asset, width: width, keepImageSizeRatio: keepImageSizeRatio, completion: completion)
         
         // 检查缓存
-        if let image = thumbnailCache.object(forKey: keyObject) {
+        if let image = thumbnailCache.object(forKey: task.id as NSString) {
             completion(image, asset)
             return
         }
         
-        if let list = imageRequestCompletionInfo[key] {
-            var newList = list
-            // 思考：闭包是否需要去重
-            newList.append(completion)
-            imageRequestCompletionInfo[key] = list
-        } else {
-            imageRequestCompletionInfo[key] = [completion]
-        }
-        
-        // 从相册获取
-        if let _ = imageRequestInfo[key] {
-            // 已经在请求中
-            // 思考：是否需要添加闭包回调处理以及是否取消和重试
+        if let index = thumbnailTasks.firstIndex(where: { $0.id == task.id }) {
+            // 已经在请求中, 忽略新请求，返回旧请求id
+            thumbnailTasks[index].addCompletion(completion)
             return
         }
         
         let id = Util.image(of: asset, width: width, keepImageSizeRatio: keepImageSizeRatio, completion: { [weak self] image, isDegraded, _ in
-            guard let self = self else { return }
-            self.thumbnailCache.setObject(image, forKey: keyObject)
-            self.imageRequestCompletionInfo[key]?.forEach {
-                $0(image, asset)
-            }
-            if !isDegraded {
-                self.imageRequestCompletionInfo[key] = nil
-                self.imageRequestInfo[key] = nil
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                if !isDegraded {
+                    self.thumbnailCache.setObject(image, forKey: task.id as NSString)
+                }
+                if let theTask = self.thumbnailTasks.first(where: { $0.id == task.id }) {
+                    theTask.completions.forEach {
+                        $0(image, theTask.asset)
+                    }
+                }
+                
+                if !isDegraded {
+                    self.thumbnailTasks.removeAll(where: { $0.id == task.id })
+                }
             }
         })
-        self.imageRequestInfo[key] = id
+        task.requestId = id
+        thumbnailTasks.append(task)
     }
 }
 
@@ -83,5 +75,52 @@ extension ImageManager {
     public func thumbnail(of photo: Photo, width: CGFloat) -> UIImage? {
         let key = "\(photo.asset.localIdentifier)-\(width)-\(false)"
         return thumbnailCache.object(forKey: key as NSString)
+    }
+}
+
+extension ImageManager {
+    func cancelTask(with id: String) {
+        guard let task = thumbnailTasks.first(where: { $0.id == id }) else { return }
+        if let requestId = task.requestId {
+            PHImageManager.default().cancelImageRequest(requestId)
+        }
+        thumbnailTasks.removeAll(where: { $0.id == id })
+    }
+}
+
+extension ImageManager {
+    /// 缩略图任务
+    struct ThumbnailTask {
+        /// id
+        let id: String
+        /// asset
+        let asset: PHAsset
+        /// 缩略图宽度
+        let width: CGFloat
+        /// 是否保存图像宽高比
+        let keepImageSizeRatio: Bool
+        /// 完成回调
+        private(set) var completions: [(UIImage, PHAsset) -> Void]
+        /// 创建时间
+        let createDate: Date
+        /// 请求id
+        var requestId: PHImageRequestID?
+        
+        init(asset: PHAsset, width: CGFloat, keepImageSizeRatio: Bool, completion: @escaping (UIImage, PHAsset) -> Void) {
+            self.id = Self.id(of: asset, width: width, keepImageSizeRatio: keepImageSizeRatio)
+            self.asset = asset
+            self.width = width
+            self.keepImageSizeRatio = keepImageSizeRatio
+            self.completions = [completion]
+            self.createDate = Date()
+        }
+        
+        static func id(of asset: PHAsset, width: CGFloat, keepImageSizeRatio: Bool) -> String {
+            "\(asset.localIdentifier)-\(width)-\(keepImageSizeRatio)"
+        }
+        
+        mutating func addCompletion(_ completion: @escaping (UIImage, PHAsset) -> Void) {
+            completions.append(completion)
+        }
     }
 }

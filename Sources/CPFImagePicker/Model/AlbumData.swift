@@ -25,7 +25,7 @@ public class AlbumData {
         }
     }
     /// 展示的相册
-    var album: Album? {
+    public internal(set) var album: Album? {
         didSet {
             observers
                 .compactMap { $0.weakObject as? AnyCPFDataObserver }
