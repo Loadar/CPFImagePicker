@@ -54,9 +54,8 @@ extension Util {
 }
 
 extension Util {
-    static func fetchAlbums(completion: @escaping ([Album]) -> Void) {
+    static func fetchAlbums(completion: @escaping ((albums: [Album], isAll: Bool)) -> Void) {
         DispatchQueue.global().async {
-            debugPrint("begin:", Date())
             var finalAlbums = [Album]()
             
             func checkCameraRoll() {
@@ -74,9 +73,7 @@ extension Util {
                     if !DataManager.shared.albumFetched, finalAlbums.contains(where: { $0.isCameraRoll }) {
                         checkCameraRoll()
                         DispatchQueue.main.async {
-                            debugPrint("quick display:", Date())
-
-                            completion(finalAlbums)
+                            completion((finalAlbums, false))
                         }
                     }
                 }
@@ -89,9 +86,7 @@ extension Util {
                     if !DataManager.shared.albumFetched, finalAlbums.contains(where: { $0.isCameraRoll }) {
                         checkCameraRoll()
                         DispatchQueue.main.async {
-                            debugPrint("quick display:", Date())
-
-                            completion(finalAlbums)
+                            completion((finalAlbums, false))
                         }
                     }
                 }
@@ -100,9 +95,7 @@ extension Util {
             checkCameraRoll()
             
             DispatchQueue.main.async {
-                debugPrint("after:", Date())
-
-                completion(finalAlbums)
+                completion((finalAlbums,true))
             }
         }
     }
@@ -142,8 +135,6 @@ extension Util {
             default: return false
             }
         }
-        
-        debugPrint("album begin:", Date())
 
         let isCameraRoll = isCameraRoll(of: collection)
         
@@ -166,7 +157,6 @@ extension Util {
         let coverPhoto = assetResult.firstObject.flatMap {
             Photo(asset: $0)
         }
-        debugPrint("album end:", Date())
 
         return Album(
             collection: collection,

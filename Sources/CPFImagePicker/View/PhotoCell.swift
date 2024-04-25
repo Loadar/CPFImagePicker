@@ -117,6 +117,15 @@ open class PhotoCell: UICollectionViewCell, AnyCPFPhotoCell {
     
     // MARK: - AnyCPFPhotoCell
     public func updateData(_ photo: Photo, isSelected: Bool, selectedIndex: Int, selectable: Bool) {
+        switch UIApplication.shared.applicationState {
+        case .active:
+            break
+        case .inactive, .background:
+            return
+        @unknown default:
+            return
+        }
+
         self.displayPhoto = photo
 
         update(selectedState: isSelected, selectedIndex: selectedIndex)
@@ -131,10 +140,14 @@ open class PhotoCell: UICollectionViewCell, AnyCPFPhotoCell {
             ImageManager.shared.cancelTask(with: oldId)
         }
         thumbnailTaskId = newId
-        ImageManager.shared.fetchThumbnail(of: photo.asset, width: width, keepImageSizeRatio: false) { [weak self] image, assert in
+        ImageManager.shared.fetchThumbnail(of: photo.asset, width: width, keepImageSizeRatio: false) { [weak self] image, isDegraded, assert in
             guard let self = self else { return }
             guard assert.localIdentifier == self.displayPhoto?.asset.localIdentifier else { return }
             self.thumbnailView.image = image
+            
+            if !isDegraded {
+                self.thumbnailTaskId = nil
+            }
         }
     }
     

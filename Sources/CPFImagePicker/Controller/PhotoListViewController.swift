@@ -61,6 +61,13 @@ open class PhotoListViewController<Cell>: UIViewController,
     
     /// 新添加得照片Id
     private var newAddedPhotoId: String?
+    /// 照片是否在加载中
+    private var reloading = false
+    /// 照片是否需要刷新
+    private var listRequiredRefresh = false
+    
+    /// 界面尺寸
+    private var viewSize: CGSize = .zero
     
     // MARK: - Lifecylce
     public init(data: AlbumData) {
@@ -80,7 +87,7 @@ open class PhotoListViewController<Cell>: UIViewController,
     open override func viewDidLoad() {
         super.viewDidLoad()
         
-        reloadPhotos()
+        //reloadPhotos()
     }
     
     open override func viewWillAppear(_ animated: Bool) {
@@ -237,7 +244,15 @@ open class PhotoListViewController<Cell>: UIViewController,
     }
     
     func reloadPhotos() {
-        guard let album = data.album else { return }
+        guard !reloading else {
+            listRequiredRefresh = true
+            return
+        }
+        guard let album = data.album else {
+            return
+        }
+        
+        reloading = true
         let oldDisplayItems = displayItems
         
         let photos = DataManager.shared.photos(of: album, page: 0, fetchIfNeeded: true) ?? []
@@ -258,7 +273,6 @@ open class PhotoListViewController<Cell>: UIViewController,
                 displayItems.insert(.add, at: 0)
             }
         }
-        //self.displayItems = displayItems
         
         if let newAddedPhotoId = self.newAddedPhotoId {
             if let photo = photos.first(where: { $0.asset.localIdentifier == newAddedPhotoId }), !self.data.isSelected(of: photo) {
@@ -272,17 +286,36 @@ open class PhotoListViewController<Cell>: UIViewController,
             self.newAddedPhotoId = nil
         }
         
-        //self.collectionView.reloadData()
         
         // 差异化更新
         let changes = diff(old: oldDisplayItems, new: displayItems)
         collectionView.reload(changes: changes) {
             self.displayItems = displayItems
+        } completion: { [weak self] _ in
+            guard let self = self else { return }
+            self.reloading = false
+
+            if self.listRequiredRefresh {
+                self.listRequiredRefresh = false
+                self.reloadPhotos()
+            }
         }
     }
     
-    open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        super.viewWillTransition(to: size, with: coordinator)
+    open override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        guard viewSize != view.bounds.size else { return }
+        viewSize = view.bounds.size
+        
+        switch UIApplication.shared.applicationState {
+        case .active:
+            break
+        case .inactive, .background:
+            return
+        @unknown default:
+            return
+        }
         
         collectionView.collectionViewLayout = data.config.photo.list.layoutProvider()
         
@@ -330,7 +363,6 @@ open class PhotoListViewController<Cell>: UIViewController,
     }
     
     public func selectedPhotosDidChanged() {
-//        collectionView.reloadData()
         collectionView.indexPathsForVisibleItems.forEach {
             guard let cell = collectionView.cellForItem(at: $0) as? Cell else { return }
             guard (0..<displayItems.count).contains($0.item) else { return }

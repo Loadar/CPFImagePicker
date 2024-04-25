@@ -18,18 +18,11 @@ final class DataManager: NSObject {
     }
     
     /// 相册列表
-    private(set) var albums = [Album]() {
-        didSet {
-            //self.photoInfo.removeAll()
-            albumFetched = true
-            
-            observers
-                .compactMap { $0.weakObject as? AnyCPFImagePickerObserver }
-                .forEach { $0.albumListDidChanged() }
-        }
-    }
+    private(set) var albums = [Album]()
     /// 相册数据已获取
     private(set) var albumFetched = false
+    /// 相册数据是否已全部获取
+    private(set) var allAlbumFetched = false
     /// 相册待刷新
     private var albumRequiredRefresh = true
     
@@ -45,6 +38,17 @@ final class DataManager: NSObject {
     
     /// 观察者
     private var observers: [WeakBox<AnyObject>] = []
+    
+    private func updateAlbums(_ albums: [Album], isAll: Bool) {
+        self.albums = albums
+        photoInfo.removeAll()
+        albumFetched = true
+        allAlbumFetched = isAll
+        
+        observers
+            .compactMap { $0.weakObject as? AnyCPFImagePickerObserver }
+            .forEach { $0.albumListDidChanged() }
+    }
 }
 
 extension DataManager {
@@ -63,9 +67,9 @@ extension DataManager {
         Util.requestAlbumAuthorization { status in
             switch status {
             case .authorized, .limited:
-                Util.fetchAlbums { [weak self] list in
+                Util.fetchAlbums { [weak self] result in
                     guard let self = self else { return }
-                    self.albums = list
+                    self.updateAlbums(result.albums, isAll: result.isAll)
                 }
             default:
                 break
@@ -159,11 +163,9 @@ extension DataManager {
 
 extension DataManager: PHPhotoLibraryChangeObserver {
     func photoLibraryDidChange(_ changeInstance: PHChange) {
-        debugPrint("***changed***")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.albumRequiredRefresh = true
-//            self.photoInfo.removeAll()
             self.compactData()
             
             if !self.displayDatas.isEmpty {

@@ -296,10 +296,16 @@ open class ImagePickerViewController: UIViewController, AnyCPFDataObserver, AnyC
         let albums = DataManager.shared.albums
         
         // 当前未选中相册或已选中相册不存在时，默认选中第一个相册
-        if let album = data.album, let theAlbum = albums.first(where: { $0 == album }) {
-            // 注意：需要赋新的值来刷新照片列表
-            data.album = theAlbum
-            return
+        if let album = data.album {
+            if let theAlbum = albums.first(where: { $0 == album }) {
+                // 注意：需要赋新的值来刷新照片列表
+                data.album = theAlbum
+                return
+            } else if DataManager.shared.allAlbumFetched {
+                // 相册已不存在
+            } else {
+                return
+            }
         }
         
         if let firstAlbum = DataManager.shared.albums.first {

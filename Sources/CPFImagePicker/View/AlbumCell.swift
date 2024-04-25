@@ -110,7 +110,7 @@ open class AlbumCell: UITableViewCell, AnyCPFAlbumCell {
     public func updateData(_ album: Album, hasSelectedPhoto: Bool) {
         displayCoverPhoto = album.coverPhoto
         if let photo = album.coverPhoto {
-            ImageManager.shared.fetchThumbnail(of: photo.asset, width: 54, keepImageSizeRatio: false) { [weak self] image, assert in
+            ImageManager.shared.fetchThumbnail(of: photo.asset, width: 54, keepImageSizeRatio: false) { [weak self] image, isDegraded, assert in
                 guard let self = self else { return }
                 guard assert.localIdentifier == self.displayCoverPhoto?.asset.localIdentifier else { return }
                 self.thumbnailView.image = image
