@@ -117,15 +117,6 @@ open class PhotoCell: UICollectionViewCell, AnyCPFPhotoCell {
     
     // MARK: - AnyCPFPhotoCell
     public func updateData(_ photo: Photo, isSelected: Bool, selectedIndex: Int, selectable: Bool) {
-        switch UIApplication.shared.applicationState {
-        case .active:
-            break
-        case .inactive, .background:
-            return
-        @unknown default:
-            return
-        }
-
         self.displayPhoto = photo
 
         update(selectedState: isSelected, selectedIndex: selectedIndex)

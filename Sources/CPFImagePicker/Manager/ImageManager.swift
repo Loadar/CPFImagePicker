@@ -8,13 +8,39 @@
 import UIKit
 import Photos
 
+extension ImageManager {
+    class CachedImage: NSObject, NSDiscardableContent {
+        let underlyingImage: UIImage
+        
+        init(_ image: UIImage) {
+            self.underlyingImage = image
+        }
+
+        func beginContentAccess() -> Bool {
+            true
+        }
+        
+        func endContentAccess() {
+            
+        }
+        
+        func discardContentIfPossible() {
+            
+        }
+        
+        func isContentDiscarded() -> Bool {
+            false
+        }
+    }
+}
+
 /// 图片管理器
 public final class ImageManager {
     public static let shared = ImageManager()
     private init() {}
     
     /// 缩略图缓存
-    private let thumbnailCache = NSCache<NSString, UIImage>().then {
+    private let thumbnailCache = NSCache<NSString, CachedImage>().then {
         $0.countLimit = 20000
     }
     /// 图像请求回调
@@ -38,11 +64,11 @@ extension ImageManager {
         
         // 检查缓存
         if let image = thumbnailCache.object(forKey: task.id as NSString) {
-            completion(image, false, asset)
+            completion(image.underlyingImage, false, asset)
             return
         }
         if let image = thumbnailCache.object(forKey: "\(task.id)-degraded" as NSString) {
-            completion(image, true, asset)
+            completion(image.underlyingImage, true, asset)
         }
         
         if let index = thumbnailTasks.firstIndex(where: { $0.id == task.id }) {
@@ -51,13 +77,22 @@ extension ImageManager {
             return
         }
         
+        switch UIApplication.shared.applicationState {
+        case .active:
+            break
+        case .inactive, .background:
+            return
+        @unknown default:
+            return
+        }
+        
         let id = Util.image(of: asset, width: width, keepImageSizeRatio: keepImageSizeRatio, completion: { [weak self] image, isDegraded, _ in
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 if !isDegraded {
-                    self.thumbnailCache.setObject(image, forKey: task.id as NSString)
+                    self.thumbnailCache.setObject(.init(image), forKey: task.id as NSString)
                 } else {
-                    self.thumbnailCache.setObject(image, forKey: "\(task.id)-degraded" as NSString)
+                    self.thumbnailCache.setObject(.init(image), forKey: "\(task.id)-degraded" as NSString)
                 }
                 if let theTask = self.thumbnailTasks.first(where: { $0.id == task.id }) {
                     theTask.completions.forEach {
@@ -80,10 +115,10 @@ extension ImageManager {
     public func thumbnail(of photo: Photo, width: CGFloat) -> UIImage? {
         let key = "\(photo.asset.localIdentifier)-\(width)-\(false)"
         if let image = thumbnailCache.object(forKey: key as NSString) {
-            return image
+            return image.underlyingImage
         } else {
             let gradedKey = "\(key)-degraded"
-            return thumbnailCache.object(forKey: gradedKey as NSString)
+            return thumbnailCache.object(forKey: gradedKey as NSString)?.underlyingImage
         }
     }
 }

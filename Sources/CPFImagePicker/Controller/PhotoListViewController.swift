@@ -84,12 +84,6 @@ open class PhotoListViewController<Cell>: UIViewController,
     }
     
     // MARK: - Appearance
-    open override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        //reloadPhotos()
-    }
-    
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
@@ -290,6 +284,14 @@ open class PhotoListViewController<Cell>: UIViewController,
         if oldDisplayItems.isEmpty || displayItems.isEmpty {
             self.displayItems = displayItems
             collectionView.reloadData()
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                self.reloading = false
+                if self.listRequiredRefresh {
+                    self.listRequiredRefresh = false
+                    self.reloadPhotos()
+                }
+            }
             return
         }
         
