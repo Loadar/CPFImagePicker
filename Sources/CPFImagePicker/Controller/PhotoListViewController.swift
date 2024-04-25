@@ -286,6 +286,13 @@ open class PhotoListViewController<Cell>: UIViewController,
             self.newAddedPhotoId = nil
         }
         
+        // 新、旧数据任意为空时，直接reload
+        if oldDisplayItems.isEmpty || displayItems.isEmpty {
+            self.displayItems = displayItems
+            collectionView.reloadData()
+            return
+        }
+        
         
         // 差异化更新
         let changes = diff(old: oldDisplayItems, new: displayItems)
