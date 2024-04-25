@@ -78,9 +78,9 @@ extension ImageManager {
         }
         
         switch UIApplication.shared.applicationState {
-        case .active:
+        case .active, .inactive:
             break
-        case .inactive, .background:
+        case .background:
             return
         @unknown default:
             return

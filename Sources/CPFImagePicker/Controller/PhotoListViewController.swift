@@ -318,9 +318,9 @@ open class PhotoListViewController<Cell>: UIViewController,
         viewSize = view.bounds.size
         
         switch UIApplication.shared.applicationState {
-        case .active:
+        case .active, .inactive:
             break
-        case .inactive, .background:
+        case .background:
             return
         @unknown default:
             return
