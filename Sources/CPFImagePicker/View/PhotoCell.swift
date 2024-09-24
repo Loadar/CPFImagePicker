@@ -157,6 +157,11 @@ open class PhotoCell: UICollectionViewCell, AnyCPFPhotoCell {
     public func update(config: Config.Photo.Cell) {
         if let radius = config.thumbnailCornerRadius, radius > 0 {
             thumbnailView.layer.cornerRadius = radius
+            if #available(iOS 13.0, *) {
+                thumbnailView.layer.cornerCurve = .circular
+            } else {
+                // Fallback on earlier versions
+            }
         } else {
             thumbnailView.layer.cornerRadius = 0
         }

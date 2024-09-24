@@ -86,6 +86,11 @@ final class CustomImagePickerViewController: ImagePickerViewController {
         }
         confirmButton.do {
             $0.layer.cornerRadius = 20
+            if #available(iOS 13.0, *) {
+                $0.layer.cornerCurve = .circular
+            } else {
+                // do nothing
+            }
             $0.clipsToBounds = true
             $0.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
             $0.titleLabel?.textColor = .white

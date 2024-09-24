@@ -103,6 +103,11 @@ open class AlbumCell: UITableViewCell, AnyCPFAlbumCell {
             $0.isUserInteractionEnabled = false
             $0.backgroundColor = Util.color(with: 0x2f54eb)
             $0.layer.cornerRadius = 8
+            if #available(iOS 13.0, *) {
+                $0.layer.cornerCurve = .circular
+            } else {
+                // do nothing
+            }
             $0.isHidden = true
         }
     }

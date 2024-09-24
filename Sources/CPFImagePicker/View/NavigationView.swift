@@ -124,6 +124,11 @@ open class NavigationView: UIView {
             $0.layer.do {
                 $0.cornerRadius = CPF.nextButtonHeight / 2
                 $0.masksToBounds = true
+                if #available(iOS 13.0, *) {
+                    $0.cornerCurve = .circular
+                } else {
+                    // Fallback on earlier versions
+                }
                 
                 $0.borderWidth = 1
             }
