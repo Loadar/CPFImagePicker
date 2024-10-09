@@ -16,7 +16,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/devxoul/Then", from: Version("3.0.0")),
-        .package(url: "https://github.com/Loadar/CPFUIKit.git", from: Version("0.2.4")),
+        .package(url: "https://github.com/Loadar/CPFUIKit.git", from: Version("0.2.6")),
         .package(url: "https://github.com/onmyway133/DeepDiff", from: Version("2.3.0")),
     ],
     targets: [
